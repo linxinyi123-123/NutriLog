@@ -8,7 +8,7 @@ data class UserProfile(
     val height: Int = 170, // cm
     val weight: Int = 65,  // kg
     val activityLevel: ActivityLevel = ActivityLevel.MODERATE,
-    val goals: List<HealthGoal> = emptyList()
+
 )
 
 enum class Gender { MALE, FEMALE }

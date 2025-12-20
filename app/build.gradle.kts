@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.nutrilog"
+    namespace = "com.example.nutrilog"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.nutrilog"
+        applicationId = "com.example.nutrilog"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -44,7 +44,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
 
     packaging {

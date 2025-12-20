@@ -13,3 +13,26 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Keystore
+*.jks
+*.keystore
+
+# Build
+*.apk
+*.aar
+*.ap_
+
+# Misc
+*.log
+*.hprof

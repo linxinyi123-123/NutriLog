@@ -2,7 +2,7 @@
 kotlin = "1.9.22"
 compose = "1.5.4"
 room = "2.6.1"
-agp = "8.1.0"  # Android Gradle Plugin 版本
+agp = "8.13.0"  # Android Gradle Plugin 版本
 
 [libraries]
 # Core
@@ -17,6 +17,7 @@ compose-material3.module = "androidx.compose.material3:material3"
 # Database
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 # Chart
 mpandroidchart = "com.github.PhilJay:MPAndroidChart:v3.1.0"

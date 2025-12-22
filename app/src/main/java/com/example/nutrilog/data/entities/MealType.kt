@@ -1,4 +1,4 @@
-package com.nutrilog.data.entities
+package com.example.nutrilog.data.entities
 
 enum class MealType(
     val displayName: String,

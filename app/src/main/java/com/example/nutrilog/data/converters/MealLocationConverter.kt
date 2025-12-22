@@ -1,7 +1,7 @@
-package com.nutrilog.data.converters
+package com.example.nutrilog.data.converters
 
 import androidx.room.TypeConverter
-import com.nutrilog.data.entities.MealLocation
+import com.example.nutrilog.data.entities.MealLocation
 
 class MealLocationConverter {
     @TypeConverter

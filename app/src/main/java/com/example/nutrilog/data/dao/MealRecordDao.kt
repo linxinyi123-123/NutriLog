@@ -1,8 +1,8 @@
-package com.nutrilog.data.dao
+package com.example.nutrilog.data.dao
 
 import androidx.room.*
-import com.nutrilog.data.entities.MealRecord
-import com.nutrilog.data.entities.MealType
+import com.example.nutrilog.data.entities.MealRecord
+import com.example.nutrilog.data.entities.MealType
 import kotlinx.coroutines.flow.Flow
 
 @Dao

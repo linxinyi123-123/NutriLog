@@ -1,8 +1,8 @@
-package com.nutrilog.data.dao
+package com.example.nutrilog.data.dao
 
 import androidx.room.*
-import com.nutrilog.data.entities.FoodCategory
-import com.nutrilog.data.entities.FoodItem
+import com.example.nutrilog.data.entities.FoodCategory
+import com.example.nutrilog.data.entities.FoodItem
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -22,6 +22,10 @@ interface FoodDao {
     
     @Query("DELETE FROM food_items")
     suspend fun deleteAll()
+    
+    // 统计操作
+    @Query("SELECT COUNT(*) FROM food_items")
+    suspend fun count(): Int
     
     // 查询操作
     @Query("SELECT * FROM food_items WHERE id = :id")
@@ -73,8 +77,4 @@ interface FoodDao {
     // 获取所有分类
     @Query("SELECT DISTINCT category FROM food_items ORDER BY category")
     suspend fun getAllCategories(): List<FoodCategory>
-    
-    // 统计
-    @Query("SELECT COUNT(*) FROM food_items")
-    suspend fun count(): Int
 }

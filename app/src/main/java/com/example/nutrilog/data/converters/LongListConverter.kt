@@ -1,4 +1,4 @@
-package com.nutrilog.data.converters
+package com.example.nutrilog.data.converters
 
 import androidx.room.TypeConverter
 

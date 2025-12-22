@@ -1,4 +1,4 @@
-package com.nutrilog.data.entities
+package com.example.nutrilog.data.entities
 
 data class NutritionFacts(
     val calories: Double = 0.0,

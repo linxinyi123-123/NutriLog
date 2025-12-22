@@ -1,4 +1,4 @@
-package com.nutrilog.common.models
+package com.example.nutrilog.common.models
 
 data class UserProfile(
     val id: Long = 1,

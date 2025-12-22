@@ -1,4 +1,4 @@
-package com.nutrilog.data.entities
+package com.example.nutrilog.data.entities
 
 import androidx.room.Embedded
 import androidx.room.Relation

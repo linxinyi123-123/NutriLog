@@ -56,7 +56,7 @@ data class FoodItem(
     
     // 单位信息
     @ColumnInfo(name = "default_unit")
-    val defaultUnit: FoodUnit = FoodUnit.GRAMS,  // 默认单位
+    val defaultUnit: FoodUnit = FoodUnit.GRAMS,  // 默认单位(基于营养信息）
     
     @ColumnInfo(name = "default_amount")
     val defaultAmount: Double = 100.0,           // 默认份量

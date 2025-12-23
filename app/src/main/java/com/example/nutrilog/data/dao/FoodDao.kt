@@ -64,17 +64,24 @@ interface FoodDao {
     suspend fun getCommonFoods(): List<FoodItem>
     
     // 最近使用食物（需要关联查询，这里简化）
-    @Query(""" 
-        SELECT fi.*, COUNT(rfi.food_id) as usage_count 
-        FROM food_items fi 
-        LEFT JOIN record_food_items rfi ON fi.id = rfi.food_id 
-        GROUP BY fi.id 
-        ORDER BY usage_count DESC, fi.name 
-        LIMIT :limit 
-    """)
-    suspend fun getRecentlyUsed(limit: Int = 10): List<FoodItem>
+    data class FoodWithUsage(
+        @Embedded val foodItem: FoodItem,
+        val usage_count: Int
+    )
+
+    @Query("""
+    SELECT fi.*, COUNT(rfi.food_id) as usage_count 
+    FROM food_items fi 
+    LEFT JOIN record_food_items rfi ON fi.id = rfi.food_id 
+    GROUP BY fi.id 
+    ORDER BY usage_count DESC, fi.name 
+    LIMIT :limit 
+""")
+    suspend fun getMostUsedFoods(limit: Int = 10): List<FoodWithUsage>
     
     // 获取所有分类
     @Query("SELECT DISTINCT category FROM food_items ORDER BY category")
     suspend fun getAllCategories(): List<FoodCategory>
+
+
 }

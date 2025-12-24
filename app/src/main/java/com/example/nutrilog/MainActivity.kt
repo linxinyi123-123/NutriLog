@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.nutrilog.di.AppModule
 import com.example.nutrilog.ui.navigation.BottomNavigationBar
+import com.example.nutrilog.ui.screens.AddRecordScreen
 import com.example.nutrilog.ui.screens.AnalysisScreen
 import com.example.nutrilog.ui.screens.FoodCategoryScreen
 import com.example.nutrilog.ui.screens.FoodListScreen
@@ -26,6 +27,7 @@ import com.example.nutrilog.ui.screens.HomeScreen
 import com.example.nutrilog.ui.screens.MainScreen
 import com.example.nutrilog.ui.screens.ProfileScreen
 import com.example.nutrilog.ui.screens.RecordDetailScreen
+import com.example.nutrilog.ui.screens.RecordListScreen
 import com.example.nutrilog.ui.screens.ReportsScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
@@ -87,21 +89,7 @@ fun NutriLogApp() {
                 )
             }
             
-            // 添加记录页面（待实现）
-            composable("add_record") {
-                // 临时占位页面
-                androidx.compose.material3.Text("添加记录页面（待实现）")
-            }
-            
-            // 记录详情页面
-            composable("record_detail/{recordId}") { backStackEntry ->
-                val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull() ?: 0L
-                RecordDetailScreen(
-                    recordId = recordId,
-                    navController = navController,
-                    viewModel = mainViewModel
-                )
-            }
+
             
             // 食物分类页面
             composable("food_categories") {
@@ -128,6 +116,34 @@ fun NutriLogApp() {
                     navController = navController,
                     viewModel = mainViewModel,
                     category = category
+                )
+            }
+            
+            // 添加记录页面
+            composable("add_record") {
+                AddRecordScreen(
+                    navController = navController,
+                    viewModel = mainViewModel
+                )
+            }
+            
+            // 编辑记录页面
+            composable("edit_record/{recordId}") { backStackEntry ->
+                val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull()
+                AddRecordScreen(
+                    navController = navController,
+                    viewModel = mainViewModel,
+                    recordId = recordId
+                )
+            }
+            
+            // 记录详情页面
+            composable("record_detail/{recordId}") { backStackEntry ->
+                val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull() ?: 0L
+                RecordDetailScreen(
+                    recordId = recordId,
+                    navController = navController,
+                    viewModel = mainViewModel
                 )
             }
         }

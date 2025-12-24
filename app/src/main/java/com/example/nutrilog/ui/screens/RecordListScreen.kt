@@ -1,326 +1,269 @@
 package com.example.nutrilog.ui.screens
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.nutrilog.data.entities.FoodItem
+import com.example.nutrilog.data.entities.MealLocation
 import com.example.nutrilog.data.entities.MealRecord
+import com.example.nutrilog.data.entities.MealType
 import com.example.nutrilog.ui.viewmodels.MainViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordListScreen(
-    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: MainViewModel
 ) {
-    val todayMealRecords by viewModel.todayMealRecords.collectAsState()
+    val allMealRecords by viewModel.allMealRecords.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     
-    // 手动下拉刷新状态
-    var isRefreshing by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     
-    Column(modifier = modifier.fillMaxSize()) {
-        // 错误消息显示
+    // 删除确认对话框状态
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var recordToDelete by remember { mutableStateOf<MealRecord?>(null) }
+    
+    // 处理错误消息
+    LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+                viewModel.clearErrorMessage()
+            }
+        }
+    }
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("饮食记录") }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
                 )
-            ) {
-                Row(
+            } else if (allMealRecords.isEmpty()) {
+                // 没有记录时的提示
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        text = "暂无饮食记录",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
-                    TextButton(onClick = { viewModel.clearErrorMessage() }) {
-                        Text("关闭")
+                    Text(
+                        text = "点击右下角按钮开始记录您的饮食",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            } else {
+                // 记录列表
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(allMealRecords) { record ->
+                        MealRecordItem(
+                            record = record,
+                            viewModel = viewModel,
+                            navController = navController,
+                            onEditClick = { recordToEdit ->
+                                // 导航到编辑界面
+                                navController.navigate("edit_record/${recordToEdit.id}")
+                            },
+                            onDeleteClick = { recordToDeleteItem ->
+                                // 显示删除确认对话框
+                                recordToDelete = recordToDeleteItem
+                                showDeleteDialog = true
+                            }
+                        )
                     }
                 }
             }
         }
         
-        // 下拉刷新指示器
-        if (isRefreshing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
-                )
-            }
-        }
-        
-        // 加载状态
-        if (isLoading && !isRefreshing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            // 使用简单的下拉刷新实现
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                if (todayMealRecords.isEmpty()) {
-                    EmptyState(
-                        onRefresh = {
-                            isRefreshing = true
-                            viewModel.loadTodayMealRecords()
+        // 删除确认对话框
+        if (showDeleteDialog && recordToDelete != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    recordToDelete = null
+                },
+                title = { Text("确认删除") },
+                text = { Text("确定要删除这条饮食记录吗？此操作不可撤销。") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            recordToDelete?.let { record ->
+                                viewModel.deleteMealRecord(record.id)
+                            }
+                            showDeleteDialog = false
+                            recordToDelete = null
                         }
-                    )
-                } else {
-                    MealRecordList(
-                        records = todayMealRecords,
-                        onRecordClick = { recordId ->
-                            navController.navigate("record_detail/$recordId")
-                        },
-                        onDeleteRecord = { recordId -> viewModel.deleteMealRecord(recordId) },
-                        onRefresh = {
-                            isRefreshing = true
-                            viewModel.loadTodayMealRecords()
+                    ) {
+                        Text("删除")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            showDeleteDialog = false
+                            recordToDelete = null
                         }
-                    )
+                    ) {
+                        Text("取消")
+                    }
                 }
-            }
-        }
-    }
-    
-    // 处理刷新状态
-    LaunchedEffect(isLoading) {
-        if (!isLoading) {
-            isRefreshing = false
-        }
-    }
-    
-    // 添加手动刷新按钮（作为替代下拉刷新的方案）
-    LaunchedEffect(Unit) {
-        // 可以添加一个浮动按钮来手动触发刷新
-    }
-}
-
-@Composable
-fun MealRecordList(
-    records: List<MealRecord>,
-    onRecordClick: (Long) -> Unit,
-    onDeleteRecord: (Long) -> Unit,
-    onRefresh: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        // 刷新按钮
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clickable { onRefresh() },
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
             )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "刷新",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "下拉刷新数据",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        
-        // 记录列表
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(records, key = { it.id }) { record ->
-                MealRecordCard(
-                    record = record,
-                    onCardClick = { onRecordClick(record.id) },
-                    onDelete = { onDeleteRecord(record.id) }
-                )
-            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MealRecordCard(
+fun MealRecordItem(
     record: MealRecord,
-    onCardClick: () -> Unit,
-    onDelete: () -> Unit
+    viewModel: MainViewModel,
+    navController: NavController,
+    onEditClick: (MealRecord) -> Unit,
+    onDeleteClick: (MealRecord) -> Unit
 ) {
+    // 状态：记录的食物列表
+    var foods by remember { mutableStateOf<List<Pair<FoodItem, Double>>>(emptyList()) }
+    
+    // 加载食物信息
+    LaunchedEffect(record.id) {
+        try {
+            foods = viewModel.getFoodsForRecord(record.id)
+        } catch (e: Exception) {
+            // 处理加载错误
+            foods = emptyList()
+        }
+    }
+    
+    // 格式化食物显示文本
+    val foodDisplayText = if (foods.isNotEmpty()) {
+        val foodNames = foods.take(3).map { it.first.name }
+        val displayText = foodNames.joinToString(", ")
+        if (foods.size > 3) "${displayText}等" else displayText
+    } else {
+        ""
+    }
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCardClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // 日期和餐次信息
+            // 第一行：食品1,食品2,食品3等
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    // 日期显示
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(
-                        text = record.date,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp
+                        text = foodDisplayText,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    
-                    // 餐次和时间
                     Text(
-                        text = "${record.mealType} - ${record.time}",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text = "${record.date} ${record.time}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
-                // 详情图标
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "查看详情",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // 主要食物信息（简化显示）
-            Text(
-                text = "主要食物: ${getMainFoodDisplay(record)}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // 备注信息
-            if (record.note.isNotBlank()) {
-                Text(
-                    text = "备注: ${record.note}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // 操作按钮
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                IconButton(onClick = { /* 编辑功能 */ }) {
-                    Icon(Icons.Default.Edit, "编辑")
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, "删除")
+                // 操作按钮
+                Row {
+                    // 编辑按钮
+                    IconButton(
+                        onClick = { onEditClick(record) }
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                            contentDescription = "编辑记录",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    // 删除按钮
+                    IconButton(
+                        onClick = { onDeleteClick(record) }
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                            contentDescription = "删除记录",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
-        }
-    }
-}
 
-// 获取主要食物显示文本（简化版本）
-private fun getMainFoodDisplay(record: MealRecord): String {
-    return if (record.note.isNotBlank() && record.note.length > 10) {
-        record.note.take(10) + "..."
-    } else if (record.note.isNotBlank()) {
-        record.note
-    } else {
-        "暂无具体食物信息"
-    }
-}
-
-@Composable
-fun EmptyState(onRefresh: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "暂无饮食记录",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = onRefresh,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(Icons.Default.Refresh, "刷新")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("刷新数据")
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "点击右下角按钮添加第一条记录",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

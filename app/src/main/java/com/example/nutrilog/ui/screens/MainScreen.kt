@@ -18,7 +18,6 @@ fun MainScreen(
     viewModel: MainViewModel
 ) {
     Scaffold(
-        topBar = { TopBar("NutriLog") },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { 
@@ -30,11 +29,12 @@ fun MainScreen(
         }
     ) { padding ->
         // 记录列表
-        RecordListScreen(
-            modifier = Modifier.padding(padding),
-            navController = navController,
-            viewModel = viewModel
-        )
+        Box(modifier = Modifier.padding(padding)) {
+            RecordListScreen(
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
     }
 }
 

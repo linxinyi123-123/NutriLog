@@ -23,6 +23,9 @@ data class FoodItem(
     @ColumnInfo(name = "english_name")
     val englishName: String? = null,     // 英文名称
     
+    @ColumnInfo(name = "brand")
+    val brand: String? = null,           // 品牌
+    
     @ColumnInfo(name = "pinyin")
     val pinyin: String? = null,          // 拼音，用于搜索
     

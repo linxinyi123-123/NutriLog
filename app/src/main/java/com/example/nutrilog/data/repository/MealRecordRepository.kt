@@ -2,9 +2,13 @@ package com.example.nutrilog.data.repository
 
 import com.example.nutrilog.data.dao.MealRecordDao
 import com.example.nutrilog.data.dao.RecordFoodDao
+import com.example.nutrilog.data.entities.FoodItem
+import com.example.nutrilog.data.entities.FoodItemWithAmount
+import com.example.nutrilog.data.entities.FoodUnit
 import com.example.nutrilog.data.entities.MealRecord
 import com.example.nutrilog.data.entities.MealRecordWithFoods
 import com.example.nutrilog.data.entities.MealType
+import com.example.nutrilog.data.entities.RecordFoodItem
 import kotlinx.coroutines.flow.Flow
 
 class MealRecordRepository(
@@ -45,6 +49,26 @@ class MealRecordRepository(
         return recordId
     }
     
+    // 添加记录并关联食物（带数量）
+    suspend fun addMealRecordWithFoods(record: MealRecord, foods: List<Pair<FoodItem, Double>>): Long {
+        val recordId = mealRecordDao.insert(record)
+        
+        // 创建食物关联
+        val recordFoods = foods.mapIndexed { index, (food, quantity) ->
+            RecordFoodItem(
+                recordId = recordId,
+                foodId = food.id,
+                amount = quantity,
+                unit = FoodUnit.GRAMS,
+                orderIndex = index
+            )
+        }
+        
+        // 保存食物关联
+        recordFoodDao.insertAll(recordFoods)
+        return recordId
+    }
+    
     // 统计操作
     suspend fun getMealRecordCount(): Int = mealRecordDao.count()
     
@@ -53,8 +77,32 @@ class MealRecordRepository(
         return mealRecordDao.getByDate(today)
     }
     
-    // 批量操作
-    suspend fun insertMultipleMealRecords(records: List<MealRecord>) {
-        records.forEach { mealRecordDao.insert(it) }
+    // 获取记录的食物列表（带数量）
+    suspend fun getFoodsForRecord(recordId: Long): List<Pair<FoodItem, Double>> {
+        val foodsWithAmount = recordFoodDao.getFoodsForRecord(recordId)
+        return foodsWithAmount.map { it.food to it.amount }
+    }
+    
+    // 更新记录并关联食物（带数量）
+    suspend fun updateMealRecordWithFoods(record: MealRecord, foods: List<Pair<FoodItem, Double>>) {
+        // 更新记录信息
+        mealRecordDao.update(record)
+        
+        // 删除旧的关联食物
+        recordFoodDao.deleteByRecordId(record.id)
+        
+        // 创建新的食物关联
+        val recordFoods = foods.mapIndexed { index, (food, quantity) ->
+            RecordFoodItem(
+                recordId = record.id,
+                foodId = food.id,
+                amount = quantity,
+                unit = FoodUnit.GRAMS,
+                orderIndex = index
+            )
+        }
+        
+        // 保存新的食物关联
+        recordFoodDao.insertAll(recordFoods)
     }
 }

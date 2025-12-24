@@ -4,13 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.nutrilog.ui.navigation.BottomNavigationBar
+import com.example.nutrilog.ui.screens.AnalysisScreen
+import com.example.nutrilog.ui.screens.HomeScreen
+import com.example.nutrilog.ui.screens.ProfileScreen
+import com.example.nutrilog.ui.screens.ReportsScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +24,39 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NutriLogTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MainScreen() {
+    val navController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NutriLogTheme {
-        Greeting("Android")
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController)
+        }
+    ) {
+            innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("home") {
+                HomeScreen(navController)
+            }
+            composable("analysis") {
+                AnalysisScreen(navController)
+            }
+            composable("reports") {
+                ReportsScreen(navController)
+            }
+            composable("profile") {
+                ProfileScreen(navController)
+            }
+        }
     }
 }

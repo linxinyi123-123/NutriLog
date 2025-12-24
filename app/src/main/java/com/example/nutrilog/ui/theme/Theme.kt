@@ -1,58 +1,63 @@
 package com.example.nutrilog.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = AppColors.Primary,
+    onPrimary = androidx.compose.ui.graphics.Color.White,
+    primaryContainer = AppColors.PrimaryVariant,
+    onPrimaryContainer = androidx.compose.ui.graphics.Color.White,
+    secondary = AppColors.Secondary,
+    onSecondary = androidx.compose.ui.graphics.Color.White,
+    secondaryContainer = AppColors.SecondaryVariant,
+    onSecondaryContainer = androidx.compose.ui.graphics.Color.White,
+    background = AppColors.Background,
+    onBackground = AppColors.OnSurface,
+    surface = AppColors.Surface,
+    onSurface = AppColors.OnSurface,
+    surfaceVariant = AppColors.Background,
+    onSurfaceVariant = AppColors.OnSurfaceVariant,
+    error = AppColors.Error
+)
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkColorScheme = darkColorScheme(
+    primary = AppColors.Primary,
+    onPrimary = androidx.compose.ui.graphics.Color.Black,
+    primaryContainer = AppColors.PrimaryVariant,
+    onPrimaryContainer = androidx.compose.ui.graphics.Color.Black,
+    secondary = AppColors.Secondary,
+    onSecondary = androidx.compose.ui.graphics.Color.Black,
+    secondaryContainer = AppColors.SecondaryVariant,
+    onSecondaryContainer = androidx.compose.ui.graphics.Color.Black,
+    background = AppColors.OnSurface,
+    onBackground = AppColors.Background,
+    surface = AppColors.OnSurfaceVariant,
+    onSurface = AppColors.Background,
+    surfaceVariant = AppColors.OnSurfaceVariant,
+    onSurfaceVariant = AppColors.Background,
+    error = AppColors.Error
 )
 
 @Composable
 fun NutriLogTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = androidx.compose.material3.Typography(
+            headlineLarge = AppTypography.h1,
+            headlineMedium = AppTypography.h2,
+            bodyLarge = AppTypography.body1,
+            bodyMedium = AppTypography.body1,
+            labelSmall = AppTypography.caption
+        ),
         content = content
     )
 }

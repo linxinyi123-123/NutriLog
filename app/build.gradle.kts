@@ -79,6 +79,9 @@ dependencies {
     // JSON处理 - Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // JetBrains注解
+    implementation("org.jetbrains:annotations:24.1.0")
+
     // 测试
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -87,4 +90,5 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation(kotlin("test"))
 }

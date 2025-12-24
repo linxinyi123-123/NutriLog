@@ -65,12 +65,16 @@ interface FoodDao {
     
     // 最近使用食物（需要关联查询，这里简化）
     @Query(""" 
-        SELECT fi.*, COUNT(rfi.food_id) as usage_count 
+        SELECT fi.* 
         FROM food_items fi 
-        LEFT JOIN record_food_items rfi ON fi.id = rfi.food_id 
-        GROUP BY fi.id 
-        ORDER BY usage_count DESC, fi.name 
-        LIMIT :limit 
+        WHERE fi.id IN (
+            SELECT rfi.food_id 
+            FROM record_food_items rfi 
+            GROUP BY rfi.food_id 
+            ORDER BY COUNT(rfi.food_id) DESC 
+            LIMIT :limit
+        )
+        ORDER BY fi.name 
     """)
     suspend fun getRecentlyUsed(limit: Int = 10): List<FoodItem>
     

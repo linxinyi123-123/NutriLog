@@ -4,6 +4,7 @@ import androidx.room.*
 import com.example.nutrilog.data.entities.MealRecord
 import com.example.nutrilog.data.entities.MealType
 import kotlinx.coroutines.flow.Flow
+import org.jetbrains.annotations.NotNull
 
 @Dao
 interface MealRecordDao {
@@ -41,7 +42,7 @@ interface MealRecordDao {
     
     // 查询餐次记录
     @Query("SELECT * FROM meal_records WHERE meal_type = :mealType ORDER BY date DESC, time DESC")
-    suspend fun getByMealType(mealType: MealType): List<MealRecord>
+    suspend fun getByMealType(mealType: @org.jetbrains.annotations.NotNull MealType): List<MealRecord>
     
     // 最近记录
     @Query("SELECT * FROM meal_records ORDER BY created_at DESC LIMIT :limit")

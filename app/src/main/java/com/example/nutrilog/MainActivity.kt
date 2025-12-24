@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+<<<<<<< HEAD
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +19,20 @@ import com.example.nutrilog.ui.screens.FoodListScreen
 import com.example.nutrilog.ui.screens.FoodSearchScreen
 import com.example.nutrilog.ui.screens.MainScreen
 import com.example.nutrilog.ui.screens.RecordDetailScreen
+=======
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.nutrilog.ui.navigation.BottomNavigationBar
+import com.example.nutrilog.ui.screens.AnalysisScreen
+import com.example.nutrilog.ui.screens.HomeScreen
+import com.example.nutrilog.ui.screens.ProfileScreen
+import com.example.nutrilog.ui.screens.ReportsScreen
+>>>>>>> develop
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 
@@ -31,13 +46,18 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             NutriLogTheme {
+<<<<<<< HEAD
                 NutriLogApp()
+=======
+                MainScreen()
+>>>>>>> develop
             }
         }
     }
 }
 
 @Composable
+<<<<<<< HEAD
 fun NutriLogApp() {
     val navController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -107,5 +127,34 @@ fun NutriLogApp() {
 fun NutriLogAppPreview() {
     NutriLogTheme {
         NutriLogApp()
+=======
+fun MainScreen() {
+    val navController = rememberNavController()
+
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController)
+        }
+    ) {
+            innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("home") {
+                HomeScreen(navController)
+            }
+            composable("analysis") {
+                AnalysisScreen(navController)
+            }
+            composable("reports") {
+                ReportsScreen(navController)
+            }
+            composable("profile") {
+                ProfileScreen(navController)
+            }
+        }
+>>>>>>> develop
     }
 }

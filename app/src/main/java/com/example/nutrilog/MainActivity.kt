@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.nutrilog.di.AppModule
 import com.example.nutrilog.ui.screens.MainScreen
+import com.example.nutrilog.ui.screens.RecordDetailScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 
@@ -58,6 +59,16 @@ fun NutriLogApp() {
         composable("add_record") {
             // 临时占位页面
             androidx.compose.material3.Text("添加记录页面（待实现）")
+        }
+        
+        // 记录详情页面
+        composable("record_detail/{recordId}") { backStackEntry ->
+            val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull() ?: 0L
+            RecordDetailScreen(
+                recordId = recordId,
+                navController = navController,
+                viewModel = mainViewModel
+            )
         }
     }
 }

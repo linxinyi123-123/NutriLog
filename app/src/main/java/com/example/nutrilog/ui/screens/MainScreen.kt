@@ -32,6 +32,7 @@ fun MainScreen(
         // 记录列表
         RecordListScreen(
             modifier = Modifier.padding(padding),
+            navController = navController,
             viewModel = viewModel
         )
     }

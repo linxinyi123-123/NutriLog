@@ -67,7 +67,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.6")
@@ -79,12 +78,6 @@ dependencies {
 
     // JSON处理 - Gson
     implementation("com.google.code.gson:gson:2.10.1")
-
-    // JetBrains注解
-    implementation("org.jetbrains:annotations:24.1.0")
-
-    // 中文拼音转换
-    implementation("com.belerweb:pinyin4j:2.5.1")
 
     // 测试
     testImplementation("junit:junit:4.13.2")

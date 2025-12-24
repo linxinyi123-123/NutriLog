@@ -13,6 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.nutrilog.di.AppModule
+import com.example.nutrilog.ui.screens.FoodCategoryScreen
+import com.example.nutrilog.ui.screens.FoodListScreen
+import com.example.nutrilog.ui.screens.FoodSearchScreen
 import com.example.nutrilog.ui.screens.MainScreen
 import com.example.nutrilog.ui.screens.RecordDetailScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
@@ -68,6 +71,32 @@ fun NutriLogApp() {
                 recordId = recordId,
                 navController = navController,
                 viewModel = mainViewModel
+            )
+        }
+        
+        // 食物分类页面
+        composable("food_categories") {
+            FoodCategoryScreen(
+                navController = navController,
+                viewModel = mainViewModel
+            )
+        }
+        
+        // 食物搜索页面
+        composable("food_search") {
+            FoodSearchScreen(
+                navController = navController,
+                viewModel = mainViewModel
+            )
+        }
+        
+        // 食物列表页面
+        composable("food_list/{category}") { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            FoodListScreen(
+                navController = navController,
+                viewModel = mainViewModel,
+                category = category
             )
         }
     }

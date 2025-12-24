@@ -2,7 +2,10 @@ package com.example.nutrilog.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nutrilog.data.entities.FoodCategory
+import com.example.nutrilog.data.entities.FoodItem
 import com.example.nutrilog.data.entities.MealRecord
+import com.example.nutrilog.data.repository.FoodRepository
 import com.example.nutrilog.data.repository.MealRecordRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +14,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class MainViewModel(
-    private val mealRecordRepository: MealRecordRepository
+    private val mealRecordRepository: MealRecordRepository,
+    private val foodRepository: FoodRepository
 ) : ViewModel() {
     
     // 当前选中的日期
@@ -72,5 +76,22 @@ class MainViewModel(
     
     fun refreshData() {
         loadTodayMealRecords()
+    }
+    
+    // 食物相关功能
+    suspend fun searchFoods(query: String): List<FoodItem> {
+        return foodRepository.searchFoods(query)
+    }
+    
+    suspend fun getFoodsByCategory(category: FoodCategory): List<FoodItem> {
+        return foodRepository.getFoodsByCategory(category)
+    }
+    
+    suspend fun getRecentlyUsedFoods(): List<FoodItem> {
+        return foodRepository.getRecentlyUsedFoods()
+    }
+    
+    suspend fun getAllCategories(): List<FoodCategory> {
+        return foodRepository.getAllCategories()
     }
 }

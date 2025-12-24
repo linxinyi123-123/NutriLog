@@ -35,7 +35,8 @@ object AppModule {
     // ViewModel工厂函数
     fun provideMainViewModel(context: Context): MainViewModel {
         val mealRecordRepository = provideMealRecordRepository(context)
-        return MainViewModel(mealRecordRepository)
+        val foodRepository = provideFoodRepository(context)
+        return MainViewModel(mealRecordRepository, foodRepository)
     }
     
     // 清理资源（用于测试）

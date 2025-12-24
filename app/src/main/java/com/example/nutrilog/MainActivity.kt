@@ -5,34 +5,28 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-<<<<<<< HEAD
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.nutrilog.di.AppModule
+import com.example.nutrilog.ui.navigation.BottomNavigationBar
+import com.example.nutrilog.ui.screens.AnalysisScreen
 import com.example.nutrilog.ui.screens.FoodCategoryScreen
 import com.example.nutrilog.ui.screens.FoodListScreen
 import com.example.nutrilog.ui.screens.FoodSearchScreen
-import com.example.nutrilog.ui.screens.MainScreen
-import com.example.nutrilog.ui.screens.RecordDetailScreen
-=======
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.nutrilog.ui.navigation.BottomNavigationBar
-import com.example.nutrilog.ui.screens.AnalysisScreen
 import com.example.nutrilog.ui.screens.HomeScreen
+import com.example.nutrilog.ui.screens.MainScreen
 import com.example.nutrilog.ui.screens.ProfileScreen
+import com.example.nutrilog.ui.screens.RecordDetailScreen
 import com.example.nutrilog.ui.screens.ReportsScreen
->>>>>>> develop
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 
@@ -46,97 +40,27 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             NutriLogTheme {
-<<<<<<< HEAD
                 NutriLogApp()
-=======
-                MainScreen()
->>>>>>> develop
             }
         }
     }
 }
 
 @Composable
-<<<<<<< HEAD
 fun NutriLogApp() {
     val navController = rememberNavController()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     
     // 创建ViewModel（使用我们的依赖注入）
     val mainViewModel: MainViewModel = remember {
         AppModule.provideMainViewModel(context)
     }
     
-    NavHost(
-        navController = navController,
-        startDestination = "main"
-    ) {
-        composable("main") {
-            MainScreen(
-                navController = navController,
-                viewModel = mainViewModel
-            )
-        }
-        
-        // 添加记录页面（待实现）
-        composable("add_record") {
-            // 临时占位页面
-            androidx.compose.material3.Text("添加记录页面（待实现）")
-        }
-        
-        // 记录详情页面
-        composable("record_detail/{recordId}") { backStackEntry ->
-            val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull() ?: 0L
-            RecordDetailScreen(
-                recordId = recordId,
-                navController = navController,
-                viewModel = mainViewModel
-            )
-        }
-        
-        // 食物分类页面
-        composable("food_categories") {
-            FoodCategoryScreen(
-                navController = navController,
-                viewModel = mainViewModel
-            )
-        }
-        
-        // 食物搜索页面
-        composable("food_search") {
-            FoodSearchScreen(
-                navController = navController,
-                viewModel = mainViewModel
-            )
-        }
-        
-        // 食物列表页面
-        composable("food_list/{category}") { backStackEntry ->
-            val category = backStackEntry.arguments?.getString("category") ?: ""
-            FoodListScreen(
-                navController = navController,
-                viewModel = mainViewModel,
-                category = category
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NutriLogAppPreview() {
-    NutriLogTheme {
-        NutriLogApp()
-=======
-fun MainScreen() {
-    val navController = rememberNavController()
-
     Scaffold(
         bottomBar = {
             BottomNavigationBar(navController)
         }
-    ) {
-            innerPadding ->
+    ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = "home",
@@ -154,7 +78,66 @@ fun MainScreen() {
             composable("profile") {
                 ProfileScreen(navController)
             }
+            
+            // 主屏幕（原来的main页面）
+            composable("main") {
+                MainScreen(
+                    navController = navController,
+                    viewModel = mainViewModel
+                )
+            }
+            
+            // 添加记录页面（待实现）
+            composable("add_record") {
+                // 临时占位页面
+                androidx.compose.material3.Text("添加记录页面（待实现）")
+            }
+            
+            // 记录详情页面
+            composable("record_detail/{recordId}") { backStackEntry ->
+                val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull() ?: 0L
+                RecordDetailScreen(
+                    recordId = recordId,
+                    navController = navController,
+                    viewModel = mainViewModel
+                )
+            }
+            
+            // 食物分类页面
+            composable("food_categories") {
+                FoodCategoryScreen(
+                    navController = navController,
+                    viewModel = mainViewModel
+                )
+            }
+            
+            // 食物搜索页面
+            composable("food_search?query={query}") { backStackEntry ->
+                val query = backStackEntry.arguments?.getString("query") ?: ""
+                FoodSearchScreen(
+                    navController = navController,
+                    viewModel = mainViewModel,
+                    initialQuery = query
+                )
+            }
+            
+            // 食物列表页面
+            composable("food_list/{category}") { backStackEntry ->
+                val category = backStackEntry.arguments?.getString("category") ?: ""
+                FoodListScreen(
+                    navController = navController,
+                    viewModel = mainViewModel,
+                    category = category
+                )
+            }
         }
->>>>>>> develop
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NutriLogAppPreview() {
+    NutriLogTheme {
+        NutriLogApp()
     }
 }

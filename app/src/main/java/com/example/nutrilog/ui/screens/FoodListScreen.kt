@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -16,6 +17,7 @@ import androidx.navigation.NavController
 import com.example.nutrilog.data.entities.FoodCategory
 import com.example.nutrilog.data.entities.FoodItem
 import com.example.nutrilog.ui.viewmodels.MainViewModel
+import com.example.nutrilog.utils.SearchUtils
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,16 +50,9 @@ fun FoodListScreen(
         }
     }
     
-    // 搜索过滤
+    // 搜索过滤 - 使用高级搜索功能
     LaunchedEffect(searchQuery, foodList) {
-        if (searchQuery.isEmpty()) {
-            filteredFoods = foodList
-        } else {
-            filteredFoods = foodList.filter { food ->
-                food.name.contains(searchQuery, ignoreCase = true) ||
-                food.englishName?.contains(searchQuery, ignoreCase = true) == true
-            }
-        }
+        filteredFoods = SearchUtils.advancedSearch(foodList, searchQuery)
     }
     
     Scaffold(

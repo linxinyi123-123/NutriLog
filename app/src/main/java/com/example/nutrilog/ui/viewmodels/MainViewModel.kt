@@ -78,6 +78,18 @@ class MainViewModel(
         loadTodayMealRecords()
     }
     
+    // 添加饮食记录
+    fun addMealRecord(record: MealRecord) {
+        viewModelScope.launch {
+            try {
+                mealRecordRepository.insertMealRecord(record)
+                loadTodayMealRecords() // 重新加载数据
+            } catch (e: Exception) {
+                _errorMessage.value = "添加记录失败: ${e.message}"
+            }
+        }
+    }
+    
     // 食物相关功能
     suspend fun searchFoods(query: String): List<FoodItem> {
         return foodRepository.searchFoods(query)

@@ -79,6 +79,9 @@ dependencies {
     // JSON处理 - Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // 拼音处理 - pinyin4j
+    implementation("com.belerweb:pinyin4j:2.5.1")
+
     // 测试
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

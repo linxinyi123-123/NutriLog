@@ -48,6 +48,10 @@ interface MealRecordDao {
     @Query("SELECT * FROM meal_records ORDER BY created_at DESC LIMIT :limit")
     suspend fun getRecent(limit: Int = 50): List<MealRecord>
     
+    // 统计记录数量
+    @Query("SELECT COUNT(*) FROM meal_records")
+    suspend fun count(): Int
+    
     @Query("SELECT * FROM meal_records ORDER BY created_at DESC LIMIT :limit")
     fun getRecentFlow(limit: Int = 50): Flow<List<MealRecord>>
     

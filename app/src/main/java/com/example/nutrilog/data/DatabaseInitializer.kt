@@ -11,6 +11,11 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import kotlinx.coroutines.flow.first
+import net.sourceforge.pinyin4j.PinyinHelper
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination
 import java.lang.reflect.Type
 
 class DatabaseInitializer(
@@ -89,7 +94,32 @@ class DatabaseInitializer(
     }
     
     private fun convertToPinyin(chinese: String): String {
-        return chinese
+        return try {
+            val format = HanyuPinyinOutputFormat().apply {
+                caseType = HanyuPinyinCaseType.LOWERCASE
+                toneType = HanyuPinyinToneType.WITHOUT_TONE
+            }
+            
+            val result = StringBuilder()
+            for (char in chinese) {
+                if (char.toString().matches("[\\u4e00-\\u9fa5]".toRegex())) {
+                    // 中文字符，转换为拼音
+                    val pinyinArray = PinyinHelper.toHanyuPinyinStringArray(char, format)
+                    if (pinyinArray != null && pinyinArray.isNotEmpty()) {
+                        result.append(pinyinArray[0])
+                    } else {
+                        result.append(char)
+                    }
+                } else {
+                    // 非中文字符，直接保留
+                    result.append(char)
+                }
+            }
+            result.toString()
+        } catch (e: BadHanyuPinyinOutputFormatCombination) {
+            Log.e("DatabaseInitializer", "拼音转换失败: ${chinese}", e)
+            chinese
+        }
     }
     
     private suspend fun addPinyinToFoods() {

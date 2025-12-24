@@ -82,6 +82,9 @@ dependencies {
     // JetBrains注解
     implementation("org.jetbrains:annotations:24.1.0")
 
+    // 中文拼音转换
+    implementation("com.belerweb:pinyin4j:2.5.1")
+
     // 测试
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

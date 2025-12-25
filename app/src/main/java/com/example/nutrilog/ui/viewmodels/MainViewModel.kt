@@ -26,6 +26,10 @@ class MainViewModel(
     private val _todayMealRecords = MutableStateFlow<List<MealRecord>>(emptyList())
     val todayMealRecords: StateFlow<List<MealRecord>> = _todayMealRecords.asStateFlow()
     
+    // 所有饮食记录
+    private val _allMealRecords = MutableStateFlow<List<MealRecord>>(emptyList())
+    val allMealRecords: StateFlow<List<MealRecord>> = _allMealRecords.asStateFlow()
+    
     // 加载状态
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -36,6 +40,7 @@ class MainViewModel(
     
     init {
         loadTodayMealRecords()
+        loadAllMealRecords()
     }
     
     fun loadTodayMealRecords() {
@@ -54,6 +59,22 @@ class MainViewModel(
         }
     }
     
+    fun loadAllMealRecords() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                val records = mealRecordRepository.getRecentMealRecords(100)
+                _allMealRecords.value = records
+            } catch (e: Exception) {
+                _errorMessage.value = "加载记录失败: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
     fun selectDate(date: String) {
         _selectedDate.value = date
         loadTodayMealRecords()
@@ -64,8 +85,21 @@ class MainViewModel(
             try {
                 mealRecordRepository.deleteMealRecordById(recordId)
                 loadTodayMealRecords() // 重新加载数据
+                loadAllMealRecords() // 重新加载所有记录
             } catch (e: Exception) {
                 _errorMessage.value = "删除记录失败: ${e.message}"
+            }
+        }
+    }
+    
+    fun updateMealRecord(record: MealRecord) {
+        viewModelScope.launch {
+            try {
+                mealRecordRepository.updateMealRecord(record)
+                loadTodayMealRecords() // 重新加载数据
+                loadAllMealRecords() // 重新加载所有记录
+            } catch (e: Exception) {
+                _errorMessage.value = "更新记录失败: ${e.message}"
             }
         }
     }
@@ -76,6 +110,7 @@ class MainViewModel(
     
     fun refreshData() {
         loadTodayMealRecords()
+        loadAllMealRecords()
     }
     
     // 添加饮食记录
@@ -84,8 +119,37 @@ class MainViewModel(
             try {
                 mealRecordRepository.insertMealRecord(record)
                 loadTodayMealRecords() // 重新加载数据
+                loadAllMealRecords() // 重新加载所有记录
             } catch (e: Exception) {
                 _errorMessage.value = "添加记录失败: ${e.message}"
+            }
+        }
+    }
+    
+    // 添加饮食记录并关联食物
+    fun addMealRecordWithFoods(record: MealRecord, foods: List<Pair<FoodItem, Double>>) {
+        viewModelScope.launch {
+            try {
+                // 使用repository的方法来添加记录和关联食物
+                mealRecordRepository.addMealRecordWithFoods(record, foods)
+                loadTodayMealRecords() // 重新加载数据
+                loadAllMealRecords() // 重新加载所有记录
+            } catch (e: Exception) {
+                _errorMessage.value = "添加记录失败: ${e.message}"
+            }
+        }
+    }
+    
+    // 更新饮食记录并关联食物
+    fun updateMealRecordWithFoods(record: MealRecord, foods: List<Pair<FoodItem, Double>>) {
+        viewModelScope.launch {
+            try {
+                // 使用repository的方法来更新记录和关联食物
+                mealRecordRepository.updateMealRecordWithFoods(record, foods)
+                loadTodayMealRecords() // 重新加载数据
+                loadAllMealRecords() // 重新加载所有记录
+            } catch (e: Exception) {
+                _errorMessage.value = "更新记录失败: ${e.message}"
             }
         }
     }
@@ -105,5 +169,15 @@ class MainViewModel(
     
     suspend fun getAllCategories(): List<FoodCategory> {
         return foodRepository.getAllCategories()
+    }
+    
+    // 获取记录详情
+    suspend fun getMealRecordById(recordId: Long): MealRecord? {
+        return mealRecordRepository.getMealRecordById(recordId)
+    }
+    
+    // 获取记录的食物列表（带数量）
+    suspend fun getFoodsForRecord(recordId: Long): List<Pair<FoodItem, Double>> {
+        return mealRecordRepository.getFoodsForRecord(recordId)
     }
 }

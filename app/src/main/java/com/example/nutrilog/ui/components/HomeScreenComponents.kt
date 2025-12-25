@@ -191,7 +191,7 @@ fun QuickActionsRow(navController: NavController) {
                 QuickActionButton(
                     icon = Icons.Default.AddCircle,
                     label = "添加记录",
-                    onClick = { /* 实现添加记录逻辑 */ }
+                    onClick = { navController.navigate("add_record") }
                 )
                 QuickActionButton(
                     icon = Icons.Outlined.Assessment,

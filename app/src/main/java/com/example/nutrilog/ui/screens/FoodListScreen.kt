@@ -30,6 +30,8 @@ fun FoodListScreen(
     var foodList by remember { mutableStateOf<List<FoodItem>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
     var filteredFoods by remember { mutableStateOf<List<FoodItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     
     // 获取分类对应的枚举
@@ -44,9 +46,19 @@ fun FoodListScreen(
     // 加载食物列表
     LaunchedEffect(foodCategory) {
         coroutineScope.launch {
-            val foods = viewModel.getFoodsByCategory(foodCategory)
-            foodList = foods
-            filteredFoods = foods
+            isLoading = true
+            errorMessage = null
+            try {
+                val foods = viewModel.getFoodsByCategory(foodCategory)
+                foodList = foods
+                filteredFoods = foods
+            } catch (e: Exception) {
+                errorMessage = "加载食物列表失败: ${e.message}"
+                foodList = emptyList()
+                filteredFoods = emptyList()
+            } finally {
+                isLoading = false
+            }
         }
     }
     
@@ -96,9 +108,19 @@ fun FoodListScreen(
                 singleLine = true
             )
             
+            // 错误信息显示
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            
             // 食物数量统计
             Text(
-                text = "共找到 ${filteredFoods.size} 种食物",
+                text = if (isLoading) "正在加载..." else "共找到 ${filteredFoods.size} 种食物",
                 modifier = Modifier.padding(horizontal = 16.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -107,7 +129,16 @@ fun FoodListScreen(
             Spacer(modifier = Modifier.height(8.dp))
             
             // 食物列表
-            if (filteredFoods.isEmpty()) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (filteredFoods.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

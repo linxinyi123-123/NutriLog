@@ -18,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.nutrilog.data.entities.FoodCategory
-import com.example.nutrilog.ui.components.TopBar
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 import com.example.nutrilog.utils.SearchUtils
 
@@ -47,9 +46,8 @@ fun FoodCategoryScreen(
     
     Scaffold(
         topBar = { 
-            TopBar(
-                title = "食物分类",
-                onSettingsClick = { navController.navigate("food_search") }
+            TopAppBar(
+                title = { Text("食物分类") }
             ) 
         }
     ) { padding ->

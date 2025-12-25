@@ -22,3 +22,27 @@ data class MealRecord(
     val mood: Int,
     val foods: List<Pair<FoodItem, Double>>  // 食物和份量(克)
 )
+
+// 分析模块数据模型
+data class DailyAnalysis(
+    val date: String,
+    val score: HealthScore,
+    val nutrition: NutritionFacts,
+    val target: NutritionFacts,
+    val records: List<MealRecord>
+)
+
+data class HealthScore(
+    val total: Double,
+    val breakdown: Map<String, Double>,
+    val feedback: List<String>
+)
+
+data class NutritionFacts(
+    val calories: Double,
+    val protein: Double,
+    val carbs: Double,
+    val fat: Double,
+    val fiber: Double? = null,
+    val sugar: Double? = null
+)

@@ -92,6 +92,12 @@ fun WelcomeSection(user: User?) {
     }
 }
 
+// 获取今日日期字符串
+fun getTodayDate(): String {
+    val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    return formatter.format(java.util.Date())
+}
+
 // 今日摘要卡片组件
 @Composable
 fun TodaySummaryCard(
@@ -102,66 +108,50 @@ fun TodaySummaryCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
         shape = AppShapes.medium
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
-            // 标题
-            Text(
-                text = "今日摘要",
-                style = AppTypography.h2,
-                color = AppColors.OnSurface,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // 营养数据网格 - 简化实现
-            Column {
-                // 第一行
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    InfoGridItem(
-                        title = "卡路里",
-                        value = summary.calories.toString(),
-                        unit = "kcal",
-                        color = AppColors.Primary,
-                        modifier = Modifier.weight(1f)
-                    )
-                    InfoGridItem(
-                        title = "蛋白质",
-                        value = summary.protein.toString(),
-                        unit = "g",
-                        color = AppColors.Protein,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 第二行
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    InfoGridItem(
-                        title = "碳水",
-                        value = summary.carbs.toString(),
-                        unit = "g",
-                        color = AppColors.Carbs,
-                        modifier = Modifier.weight(1f)
-                    )
-                    InfoGridItem(
-                        title = "脂肪",
-                        value = summary.fat.toString(),
-                        unit = "g",
-                        color = AppColors.Fat,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+            // 标题和日期
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "今日摘要",
+                    style = AppTypography.h2,
+                    color = AppColors.OnSurface
+                )
+                
+                Text(
+                    text = getTodayDate(),
+                    style = AppTypography.caption,
+                    color = AppColors.OnSurfaceVariant
+                )
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 营养数据网格
+            NutritionGrid(summary)
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // 健康评分进度条
+            HealthScoreProgress(score = 85) // 临时使用固定分数，实际应从 summary 中获取
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // 快速提示
+            Text(
+                text = "今日饮食搭配均衡，继续保持！",
+                style = AppTypography.caption,
+                color = AppColors.Info,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -398,6 +388,145 @@ fun MealItem(meal: Meal) {
             style = AppTypography.h2,
             color = AppColors.Primary
         )
+    }
+}
+
+// 健康评分进度条组件
+@Composable
+fun HealthScoreProgress(score: Int) {
+    Column {
+        // 分数标签
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "健康评分",
+                style = AppTypography.body1,
+                color = AppColors.OnSurface
+            )
+            
+            Text(
+                text = "$score/100",
+                style = AppTypography.body1.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                color = getScoreColor(score)
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // 进度条
+        androidx.compose.material3.LinearProgressIndicator(
+            progress = score / 100f,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp),
+            color = getScoreColor(score),
+            trackColor = AppColors.Background
+        )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // 评分标签
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("需改善", style = AppTypography.caption, color = AppColors.Error)
+            Text("良好", style = AppTypography.caption, color = AppColors.Warning)
+            Text("优秀", style = AppTypography.caption, color = AppColors.Success)
+        }
+    }
+}
+
+@Composable
+fun getScoreColor(score: Int): androidx.compose.ui.graphics.Color {
+    return when {
+        score < 60 -> AppColors.Error
+        score < 80 -> AppColors.Warning
+        else -> AppColors.Success
+    }
+}
+
+// 营养数据网格组件
+@Composable
+fun NutritionGrid(summary: TodaySummary) {
+    val items = listOf(
+        Triple("热量", summary.calories, "kcal"),
+        Triple("蛋白质", summary.protein.toInt(), "g"),
+        Triple("碳水", summary.carbs.toInt(), "g"),
+        Triple("脂肪", summary.fat.toInt(), "g")
+    )
+    
+    GridView(
+        columns = 2,
+        items = items
+    ) { (label, value, unit) ->
+        NutritionItem(label, value, unit)
+    }
+}
+
+// 营养数据项组件
+@Composable
+fun NutritionItem(label: String, value: Any, unit: String) {
+    Column(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text(
+            text = label,
+            style = AppTypography.caption,
+            color = AppColors.OnSurfaceVariant
+        )
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = value.toString(),
+                style = AppTypography.h2,
+                color = AppColors.Primary
+            )
+            Text(
+                text = unit,
+                style = AppTypography.body1,
+                color = AppColors.OnSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            )
+        }
+    }
+}
+
+// 简化的网格布局实现，使用 Column 和 Row 替代 LazyVerticalGrid
+@Composable
+fun <T> GridView(
+    columns: Int,
+    items: List<T>,
+    content: @Composable (T) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        val rows = (items.size + columns - 1) / columns
+        for (row in 0 until rows) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                for (col in 0 until columns) {
+                    val index = row * columns + col
+                    if (index < items.size) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.TopStart
+                        ) {
+                            content(items[index])
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
     }
 }
 

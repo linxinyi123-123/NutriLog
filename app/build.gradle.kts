@@ -103,6 +103,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material:material")
+    
+    // 图表库
+    implementation("com.patrykandpatrick.vico:compose:1.12.0")
+    implementation("com.patrykandpatrick.vico:core:1.12.0")
 
     // 使用与 BOM 兼容的 activity-compose 版本
     implementation("androidx.activity:activity-compose:1.8.2")

@@ -1,5 +1,5 @@
 // app/src/main/java/com/nutrilog/features/recommendation/model/Recommendation.kt
-package com.nutrilog.features.recommendation.model
+package com.example.nutrilog.features.recommendation.model
 
 import java.util.Date
 

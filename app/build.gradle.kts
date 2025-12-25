@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -78,7 +79,7 @@ dependencies {
 
     // JSON处理 - Gson
     implementation("com.google.code.gson:gson:2.10.1")
-
+    implementation("org.json:json:20210307")  // 新增：用于规则解析器
     // 拼音处理 - pinyin4j
     implementation("com.belerweb:pinyin4j:2.5.1")
 
@@ -95,6 +96,9 @@ dependencies {
 
     //ui
     implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+
+    //timber
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
     // 基础 Compose 依赖
     implementation("androidx.compose.material3:material3")
@@ -123,14 +127,23 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
 
-    // 测试依赖
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-
+// ============ 测试依赖 ============
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    // Mockito测试框架（用于规则引擎测试）
+    testImplementation("org.mockito:mockito-core:4.5.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+
+    // Coroutines测试
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation(kotlin("test"))
 
     implementation("androidx.compose.material:material-icons-extended")
 }

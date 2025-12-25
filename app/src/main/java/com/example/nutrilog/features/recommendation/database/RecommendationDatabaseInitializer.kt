@@ -1,7 +1,10 @@
-package com.nutrilog.features.recommendation.database
+package com.example.nutrilog.features.recommendation.database
 
-import com.nutrilog.features.recommendation.database.entity.AchievementEntity
-import com.nutrilog.features.recommendation.database.entity.RecommendationRuleEntity
+import com.example.nutrilog.features.recommendation.database.entity.AchievementEntity
+import com.example.nutrilog.features.recommendation.database.entity.RecommendationRuleEntity
+import com.example.nutrilog.features.recommendation.engine.rule.RuleAction
+import com.example.nutrilog.features.recommendation.engine.rule.RuleCondition
+import com.example.nutrilog.features.recommendation.engine.rule.RuleParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,13 +13,15 @@ class RecommendationDatabaseInitializer(
     private val database: RecommendationDatabase
 ) {
 
-    fun initializeForUser(userId: Long) {
+    suspend fun initializeForUser(userId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
             // 为用户复制模板成就
             copyTemplateAchievementsForUser(userId)
 
-            // 插入初始推荐规则
-            insertDefaultRecommendationRules()
+            // 插入初始推荐规则（如果还没有规则）
+            if (database.recommendationRuleDao().getRuleCount() == 0) {
+                insertDefaultRecommendationRules()
+            }
         }
     }
 
@@ -43,23 +48,51 @@ class RecommendationDatabaseInitializer(
     }
 
     private suspend fun insertDefaultRecommendationRules() {
-        // 这里可以插入一些默认的推荐规则
-        // 例如：当蛋白质不足时推荐高蛋白食物
-        // 这些规则将在D4的规则引擎中使用
+        val ruleParser = RuleParser()
+        val defaultRules = ruleParser.createDefaultRules()
 
-        // 由于任务清单中没有RequirementRuleEntity的定义，这里先注释
-        // 等D4时再实现
-        /*
-        val defaultRules = listOf(
+        val ruleEntities = defaultRules.map { rule ->
             RecommendationRuleEntity(
-                id = 1,
-                type = "NUTRITION_GAP",
-                condition = "protein_gap > 0.3",
-                action = "suggest_protein_foods",
-                priority = "HIGH",
-                message = "检测到蛋白质摄入不足，建议增加蛋白质食物"
+                id = rule.id,
+                type = rule.type.name,
+                condition = serializeCondition(rule.condition), // 需要实现序列化方法
+                action = serializeAction(rule.action),         // 需要实现序列化方法
+                priority = rule.priority.name,
+                message = rule.message
             )
-        )
-        */
+        }
+
+        database.recommendationRuleDao().insertAll(ruleEntities)
+    }
+
+    // 添加序列化方法
+    private fun serializeCondition(condition: RuleCondition): String {
+        return when (condition) {
+            is RuleCondition.NutrientGap -> {
+                """{"type":"NUTRIENT_GAP","nutrient":"${condition.nutrient}","threshold":${condition.threshold},"comparison":"${condition.comparison.name}"}"""
+            }
+            is RuleCondition.HealthScore -> {
+                """{"type":"HEALTH_SCORE","score":${condition.score},"comparison":"${condition.comparison.name}"}"""
+            }
+            is RuleCondition.GoalProgress -> {
+                """{"type":"GOAL_PROGRESS","goalType":"${condition.goalType}","progress":${condition.progress},"comparison":"${condition.comparison.name}"}"""
+            }
+            else -> "{}"
+        }
+    }
+
+    private fun serializeAction(action: RuleAction): String {
+        return when (action) {
+            is RuleAction.SuggestFoods -> {
+                val categoriesJson = action.foodCategories.joinToString(",") { "\"$it\"" }
+                """{"type":"SUGGEST_FOODS","foodCategories":[$categoriesJson],"reason":"${action.reason}"${if (action.mealType != null) ",\"mealType\":\"${action.mealType}\"" else ""}}"""
+            }
+
+            is RuleAction.ShowEducationalTip -> {
+                """{"type":"SHOW_EDUCATIONAL_TIP","tipId":${action.tipId},"category":"${action.category}"}"""
+            }
+
+            else -> "{}"
+        }
     }
 }

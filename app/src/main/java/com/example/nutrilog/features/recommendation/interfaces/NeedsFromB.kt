@@ -1,4 +1,4 @@
-package com.nutrilog.features.recommendation.interfaces
+package com.example.nutrilog.features.recommendation.interfaces
 
 import kotlinx.coroutines.flow.Flow
 

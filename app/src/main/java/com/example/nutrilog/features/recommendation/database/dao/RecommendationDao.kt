@@ -1,7 +1,7 @@
-package com.nutrilog.features.recommendation.database.dao
+package com.example.nutrilog.features.recommendation.database.dao
 
 import androidx.room.*
-import com.nutrilog.features.recommendation.database.entity.RecommendationEntity
+import com.example.nutrilog.features.recommendation.database.entity.RecommendationEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

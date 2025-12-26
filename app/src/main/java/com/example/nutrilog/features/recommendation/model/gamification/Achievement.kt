@@ -1,5 +1,5 @@
 // app/src/main/java/com/nutrilog/features/recommendation/model/gamification/Achievement.kt
-package com.nutrilog.features.recommendation.model.gamification
+package com.example.nutrilog.features.recommendation.model.gamification
 
 data class Achievement(
     val id: Long,

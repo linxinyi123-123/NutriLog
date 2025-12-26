@@ -1,16 +1,19 @@
-package com.nutrilog.features.recommendation.database
+package com.example.nutrilog.features.recommendation.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.nutrilog.features.recommendation.database.dao.AchievementDao
-import com.nutrilog.features.recommendation.database.dao.HealthGoalDao
-import com.nutrilog.features.recommendation.database.dao.RecommendationDao
-import com.nutrilog.features.recommendation.database.entity.AchievementEntity
-import com.nutrilog.features.recommendation.database.entity.HealthGoalEntity
-import com.nutrilog.features.recommendation.database.entity.RecommendationEntity
+import com.example.nutrilog.features.recommendation.database.dao.AchievementDao
+import com.example.nutrilog.features.recommendation.database.dao.HealthGoalDao
+import com.example.nutrilog.features.recommendation.database.dao.RecommendationDao
+import com.example.nutrilog.features.recommendation.database.entity.AchievementEntity
+import com.example.nutrilog.features.recommendation.database.entity.HealthGoalEntity
+import com.example.nutrilog.features.recommendation.database.entity.RecommendationEntity
+import com.example.nutrilog.features.recommendation.database.entity.RecommendationRuleEntity
+import com.example.nutrilog.features.recommendation.database.dao.RecommendationRuleDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,9 +22,10 @@ import kotlinx.coroutines.launch
     entities = [
         RecommendationEntity::class,
         HealthGoalEntity::class,
-        AchievementEntity::class
+        AchievementEntity::class,
+        RecommendationRuleEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class RecommendationDatabase : RoomDatabase() {
@@ -29,10 +33,49 @@ abstract class RecommendationDatabase : RoomDatabase() {
     abstract fun recommendationDao(): RecommendationDao
     abstract fun healthGoalDao(): HealthGoalDao
     abstract fun achievementDao(): AchievementDao
+    abstract fun recommendationRuleDao(): RecommendationRuleDao
 
     companion object {
         @Volatile
         private var INSTANCE: RecommendationDatabase? = null
+
+        // 数据库迁移：从版本1到版本2
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // 创建推荐规则表
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS recommendation_rules (
+                        id INTEGER PRIMARY KEY NOT NULL,
+                        type TEXT NOT NULL,
+                        condition TEXT NOT NULL,
+                        action TEXT NOT NULL,
+                        priority TEXT NOT NULL,
+                        message TEXT NOT NULL
+                    )
+                """)
+
+                // 插入一些默认规则
+                val defaultRules = listOf(
+                    // 蛋白质严重不足规则
+                    "INSERT OR REPLACE INTO recommendation_rules VALUES (1, 'NUTRITION_GAP', '{\"type\":\"NUTRIENT_GAP\",\"nutrient\":\"protein\",\"threshold\":30.0,\"comparison\":\"GREATER_THAN\"}', '{\"type\":\"SUGGEST_FOODS\",\"foodCategories\":[\"高蛋白\"],\"reason\":\"蛋白质补充\"}', 'HIGH', '检测到蛋白质摄入严重不足，建议增加高蛋白食物')",
+
+                    // 健康评分过低规则
+                    "INSERT OR REPLACE INTO recommendation_rules VALUES (2, 'HEALTH_SCORE', '{\"type\":\"HEALTH_SCORE\",\"score\":60,\"comparison\":\"LESS_THAN\"}', '{\"type\":\"SHOW_EDUCATIONAL_TIP\",\"tipId\":101,\"category\":\"营养均衡\"}', 'MEDIUM', '您的健康评分较低，建议查看营养知识')",
+
+                    // 膳食纤维不足规则
+                    "INSERT OR REPLACE INTO recommendation_rules VALUES (3, 'NUTRITION_GAP', '{\"type\":\"NUTRIENT_GAP\",\"nutrient\":\"fiber\",\"threshold\":20.0,\"comparison\":\"GREATER_THAN\"}', '{\"type\":\"SUGGEST_FOODS\",\"foodCategories\":[\"高纤维\"],\"reason\":\"膳食纤维补充\"}', 'MEDIUM', '膳食纤维摄入不足，建议增加蔬菜水果')"
+                )
+
+                defaultRules.forEach { sql ->
+                    try {
+                        database.execSQL(sql)
+                    } catch (e: Exception) {
+                        // 如果插入失败，继续执行下一条
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
 
         fun getDatabase(context: Context): RecommendationDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -42,7 +85,8 @@ abstract class RecommendationDatabase : RoomDatabase() {
                     "recommendation_database"
                 )
                     .addCallback(RecommendationDatabaseCallback(context))
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_1_2)  // 添加迁移策略
+                    .fallbackToDestructiveMigration()  // 如果迁移失败，重建数据库
                     .build()
                 INSTANCE = instance
                 instance
@@ -139,5 +183,47 @@ class RecommendationDatabaseCallback(
         )
 
         database.achievementDao().insertAll(defaultAchievements)
+
+        // 检查并插入默认规则数据（如果规则表为空）
+        try {
+            val ruleCount = database.recommendationRuleDao().getRuleCount()
+            if (ruleCount == 0) {
+                insertDefaultRecommendationRules(database)
+            }
+        } catch (e: Exception) {
+            // 如果表不存在，插入默认规则
+            insertDefaultRecommendationRules(database)
+        }
+    }
+
+    private suspend fun insertDefaultRecommendationRules(database: RecommendationDatabase) {
+        val defaultRules = listOf(
+            RecommendationRuleEntity(
+                id = 1,
+                type = "NUTRITION_GAP",
+                condition = """{"type":"NUTRIENT_GAP","nutrient":"protein","threshold":30.0,"comparison":"GREATER_THAN"}""",
+                action = """{"type":"SUGGEST_FOODS","foodCategories":["高蛋白"],"reason":"蛋白质补充"}""",
+                priority = "HIGH",
+                message = "检测到蛋白质摄入严重不足，建议增加高蛋白食物"
+            ),
+            RecommendationRuleEntity(
+                id = 2,
+                type = "HEALTH_SCORE",
+                condition = """{"type":"HEALTH_SCORE","score":60,"comparison":"LESS_THAN"}""",
+                action = """{"type":"SHOW_EDUCATIONAL_TIP","tipId":101,"category":"营养均衡"}""",
+                priority = "MEDIUM",
+                message = "您的健康评分较低，建议查看营养知识"
+            ),
+            RecommendationRuleEntity(
+                id = 3,
+                type = "NUTRITION_GAP",
+                condition = """{"type":"NUTRIENT_GAP","nutrient":"fiber","threshold":20.0,"comparison":"GREATER_THAN"}""",
+                action = """{"type":"SUGGEST_FOODS","foodCategories":["高纤维"],"reason":"膳食纤维补充"}""",
+                priority = "MEDIUM",
+                message = "膳食纤维摄入不足，建议增加蔬菜水果"
+            )
+        )
+
+        database.recommendationRuleDao().insertAll(defaultRules)
     }
 }

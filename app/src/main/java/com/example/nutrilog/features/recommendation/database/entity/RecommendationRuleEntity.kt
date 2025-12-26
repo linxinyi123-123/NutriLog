@@ -1,4 +1,4 @@
-package com.nutrilog.features.recommendation.database.entity
+package com.example.nutrilog.features.recommendation.database.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

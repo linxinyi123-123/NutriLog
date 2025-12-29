@@ -1,8 +1,10 @@
 package com.example.nutrilog.analysis.calculator
 
+
 import com.example.nutrilog.data.entities.NutritionFacts
 import com.example.nutrilog.shared.FoodItem
 import com.example.nutrilog.shared.MealRecord
+
 
 class BasicNutritionCalculator {
     // 计算单个食物的营养

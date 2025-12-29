@@ -1,9 +1,13 @@
 package com.example.nutrilog.shared
 
+import com.example.nutrilog.data.entities.FoodCategory
+import com.example.nutrilog.data.entities.MealLocation
+import com.example.nutrilog.data.entities.MealType
+
 data class FoodItem(
     val id: Long,
     val name: String,
-    val category: String,  // 主食、蔬菜、水果、肉类、豆制品、奶制品、油脂、零食
+    val category: FoodCategory,  // 主食、蔬菜、水果、肉类、豆制品、奶制品、油脂、零食
     val calories: Double,  // 每100克热量(kcal)
     val protein: Double,   // 蛋白质(g)
     val carbs: Double,     // 碳水化合物(g)
@@ -17,8 +21,8 @@ data class MealRecord(
     val id: Long,
     val date: String,      // yyyy-MM-dd
     val time: String,      // HH:mm
-    val mealType: String,  // breakfast, lunch, dinner, snack
-    val location: String,
+    val mealType: MealType,  // breakfast, lunch, dinner, snack
+    val location: MealLocation,
     val mood: Int,
     val foods: List<Pair<FoodItem, Double>>  // 食物和份量(克)
 )
@@ -28,7 +32,7 @@ data class DailyAnalysis(
     val date: String,
     val score: HealthScore,
     val nutrition: NutritionFacts,
-    val target: NutritionFacts,
+    val target: NutritionTarget,
     val records: List<MealRecord>
 )
 
@@ -44,7 +48,8 @@ data class NutritionFacts(
     val carbs: Double,
     val fat: Double,
     val fiber: Double? = null,
-    val sugar: Double? = null
+    val sugar: Double? = null,
+    val sodium: Double?= null
 )
 
 //推荐膳食标准

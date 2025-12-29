@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Share
@@ -71,7 +70,7 @@ class AnalysisViewModel {
                 carbs = 220.0,
                 fat = 58.0,
                 fiber = 25.0,
-                sugar = 45.0
+                sugar = 45.0,
             ),
             target = NutritionFacts(
                 calories = 2000.0,
@@ -79,7 +78,7 @@ class AnalysisViewModel {
                 carbs = 250.0,
                 fat = 65.0,
                 fiber = 30.0,
-                sugar = 50.0
+                sugar = 50.0,
             ),
             records = emptyList()
         )

@@ -65,6 +65,17 @@ data class NutritionTarget(
 
 data class Range(val min: Double, val max: Double)
 
+// 趋势分析数据模型
+data class TrendAnalysis(
+    val dailyPoints: List<DailyPoint>
+)
+
+data class DailyPoint(
+    val date: String,
+    val score: Double,
+    val nutrition: NutritionFacts
+)
+
 // 基于中国居民膳食指南的标准
 class NutritionTargetFactory {
     fun createForAdultMale(): NutritionTarget {

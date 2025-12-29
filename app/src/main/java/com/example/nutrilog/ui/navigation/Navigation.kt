@@ -1,5 +1,11 @@
 package com.example.nutrilog.ui.navigation
 
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Assessment
 import androidx.compose.material.icons.outlined.Description
@@ -11,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -62,5 +69,44 @@ fun BottomNavigationBar(navController: NavController) {
                 }
             )
         }
+    }
+}
+
+// 页面切换动画组件
+@Composable
+fun AnimatedNavigation(
+    currentScreen: String,
+    content: @Composable (String) -> Unit
+) {
+    val transition = updateTransition(currentScreen, label = "navigation")
+    
+    val slideOffset = transition.animateDp(
+        transitionSpec = {
+            when {
+                initialState == "home" && targetState == "analysis" ->
+                    tween(durationMillis = 300)
+                else ->
+                    tween(durationMillis = 300)
+            }
+        }
+    ) { screen ->
+        when (screen) {
+            "home" -> 0.dp
+            "analysis" -> 0.dp
+            else -> 0.dp
+        }
+    }
+    
+    val alpha = transition.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) }
+    ) { screen ->
+        when (screen) {
+            currentScreen -> 1f
+            else -> 0f
+        }
+    }
+    
+    Box(modifier = Modifier.fillMaxSize()) {
+        content(currentScreen)
     }
 }

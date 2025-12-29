@@ -29,6 +29,8 @@ import com.example.nutrilog.ui.screens.ProfileScreen
 import com.example.nutrilog.ui.screens.RecordDetailScreen
 import com.example.nutrilog.ui.screens.RecordListScreen
 import com.example.nutrilog.ui.screens.ReportsScreen
+import com.example.nutrilog.ui.screens.ReportGenerationScreen
+import com.example.nutrilog.ui.screens.ReportPreviewScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 
@@ -144,6 +146,20 @@ fun NutriLogApp() {
                     recordId = recordId,
                     navController = navController,
                     viewModel = mainViewModel
+                )
+            }
+            
+            // 报告生成页面
+            composable("report_generation") {
+                ReportGenerationScreen(navController)
+            }
+            
+            // 报告预览页面
+            composable("report_preview/{reportId}") { backStackEntry ->
+                val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
+                ReportPreviewScreen(
+                    reportId = reportId,
+                    navController = navController
                 )
             }
         }

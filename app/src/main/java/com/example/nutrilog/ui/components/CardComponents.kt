@@ -3,20 +3,27 @@ package com.example.nutrilog.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.PullRefreshState
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.nutrilog.ui.theme.AppColors
 import com.example.nutrilog.ui.theme.AppShapes
 import com.example.nutrilog.ui.theme.AppTypography
+import kotlinx.coroutines.delay
 
 // 基础卡片组件
 @Composable
@@ -117,4 +124,130 @@ fun HealthScoreBadge(score: Int) {
             modifier = Modifier.align(Alignment.Center)
         )
     }
+}
+
+// 加载动画组件
+@Composable
+fun LoadingView(
+    message: String = "加载中..."
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // 旋转动画
+        val rotationState = remember { mutableStateOf(0f) }
+        
+        LaunchedEffect(Unit) {
+            var currentRotation = 0f
+            while (true) {
+                currentRotation += 10f
+                if (currentRotation >= 360f) currentRotation = 0f
+                delay(16) // 约60fps
+            }
+        }
+        
+        Box(
+            modifier = Modifier
+                .size(64.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = AppColors.Primary,
+                strokeWidth = 4.dp
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = message,
+            style = AppTypography.body1,
+            color = AppColors.OnSurfaceVariant
+        )
+    }
+}
+
+// 数据刷新动画组件
+@OptIn(ExperimentalMaterialApi::class)
+@Composable 
+fun RefreshableContent( 
+    isRefreshing: Boolean, 
+    onRefresh: () -> Unit, 
+    content: @Composable () -> Unit 
+) { 
+    val refreshState = rememberPullRefreshState( 
+        refreshing = isRefreshing, 
+        onRefresh = onRefresh 
+    ) 
+    
+    Box( 
+        modifier = Modifier 
+            .fillMaxSize() 
+            .pullRefresh(refreshState) 
+    ) { 
+        content() 
+        
+        PullRefreshIndicator( 
+            refreshing = isRefreshing, 
+            state = refreshState, 
+            modifier = Modifier.align(Alignment.TopCenter) 
+        ) 
+    } 
+}
+
+// 带动画效果的按钮组件
+@Composable 
+fun AnimatedButton( 
+    text: String, 
+    onClick: () -> Unit, 
+    modifier: Modifier = Modifier, 
+    enabled: Boolean = true 
+) { 
+    val isPressedState = remember { mutableStateOf(false) }
+    
+    Button( 
+        onClick = onClick, 
+        modifier = modifier 
+            .scale(if (isPressedState.value) 0.95f else 1f) 
+            .pointerInput(Unit) { 
+                detectTapGestures( 
+                    onPress = { 
+                        isPressedState.value = true 
+                        tryAwaitRelease() 
+                        isPressedState.value = false 
+                    } 
+                ) 
+            }, 
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = AppColors.Primary,
+            disabledContainerColor = AppColors.Primary.copy(alpha = 0.5f)
+        )
+    ) { 
+        Text(text = text) 
+    } 
+}
+
+// 带有涟漪效果的卡片组件
+@Composable 
+fun RippleCard( 
+    onClick: () -> Unit, 
+    modifier: Modifier = Modifier, 
+    content: @Composable () -> Unit 
+) { 
+    Card( 
+        modifier = modifier 
+            .clickable( 
+                onClick = onClick, 
+                indication = rememberRipple(bounded = true), 
+                interactionSource = remember { MutableInteractionSource() } 
+            ), 
+        elevation = CardDefaults.cardElevation(4.dp), 
+        shape = AppShapes.medium
+    ) { 
+        content() 
+    } 
 }

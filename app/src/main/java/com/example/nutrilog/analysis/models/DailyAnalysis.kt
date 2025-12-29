@@ -1,5 +1,10 @@
 package com.example.nutrilog.analysis.models
 
+import com.example.nutrilog.shared.HealthScore
+import com.example.nutrilog.shared.MealRecord
+import com.example.nutrilog.shared.NutritionFacts
+import com.example.nutrilog.shared.NutritionTarget
+
 data class DailyAnalysis(
     val date: String,
     val nutrition: NutritionFacts,

@@ -2,6 +2,6 @@
 package com.example.nutrilog.features.recommendation.engine.rule
 
 enum class LogicalOperator {
-    AND,
+    AND,  // 与
     OR
 }

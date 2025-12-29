@@ -1,10 +1,11 @@
-// app/src/main/java/com/nutrilog/features/recommendation/engine/RecommendationContext.kt
 package com.example.nutrilog.features.recommendation.engine
 
 import com.example.nutrilog.features.recommendation.interfaces.NutritionalGap
 import com.example.nutrilog.features.recommendation.interfaces.EatingPatternAnalysis
 import com.example.nutrilog.features.recommendation.interfaces.DailyScore
 import com.example.nutrilog.features.recommendation.model.HealthGoal
+import com.example.nutrilog.features.recommendation.model.CookingTime
+import com.example.nutrilog.features.recommendation.model.BudgetRange
 import java.time.LocalTime
 import java.time.LocalDate
 
@@ -41,21 +42,4 @@ data class RecommendationContext(
     val appUsageCount: Int = 0
 )
 
-data class BudgetRange(
-    val min: Double,
-    val max: Double
-)
-
-enum class CookingTime {
-    QUICK,      // <15分钟
-    MODERATE,   // 15-30分钟
-    EXTENDED    // >30分钟
-}
-
-data class UserPreferences(
-    val dietaryRestrictions: List<String> = emptyList(),
-    val dislikedFoods: List<String> = emptyList(),
-    val preferredCuisines: List<String> = emptyList(),
-    val cookingTimeAvailability: CookingTime = CookingTime.MODERATE,
-    val budgetRange: BudgetRange? = null
-)
+// 删除原来的CookingTime和BudgetRange定义

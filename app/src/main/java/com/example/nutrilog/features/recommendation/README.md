@@ -78,3 +78,17 @@ Comparison.kt 和 LogicalOperator.kt - 工具类
 规则数据的CRUD操作
 
 数据库迁移策略
+
+## D5完成内容
+✅ 新增文件：
+features/recommendation/algorithm/BaseRecommender.kt推荐器基类
+
+features/recommendation/algorithm/NutritionalGapRecommender.kt营养缺口推荐器
+
+features/recommendation/algorithm/GoalBasedRecommender.kt健康目标推荐器
+
+features/recommendation/factory/RecommendationFactory.kt推荐工厂
+
+features/recommendation/test/RecommendationTest.kt
+
+features/recommendation/Main.kt

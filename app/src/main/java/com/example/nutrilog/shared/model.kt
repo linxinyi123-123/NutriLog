@@ -32,7 +32,7 @@ data class DailyAnalysis(
     val date: String,
     val score: HealthScore,
     val nutrition: NutritionFacts,
-    val target: NutritionTarget,
+    val target: NutritionFacts,
     val records: List<MealRecord>
 )
 

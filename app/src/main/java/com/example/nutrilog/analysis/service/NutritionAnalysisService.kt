@@ -5,6 +5,7 @@ import com.example.nutrilog.analysis.calculator.HealthScoreCalculatorV1
 import com.example.nutrilog.analysis.calculator.PersonalizedTargetCalculator
 import com.example.nutrilog.analysis.repository.AnalysisRepository
 import com.example.nutrilog.shared.DailyAnalysis
+import com.example.nutrilog.shared.NutritionFacts
 import com.example.nutrilog.shared.NutritionTarget
 import com.example.nutrilog.shared.NutritionTargetFactory
 
@@ -41,11 +42,11 @@ class NutritionAnalysisService(
             sodium = nutrition.sodium
         )
 
-        val newtarget = NutritionTarget(
-            calories = target.calories,
-            protein = target.protein,
-            carbs = target.carbs,
-            fat = target.fat,
+        val newtarget = NutritionFacts(
+            calories = (target.calories.min+target.calories.max)/2,
+            protein = (target.protein.min+target.protein.max)/2,
+            carbs = (target.carbs.min+target.protein.max)/2,
+            fat = (target.fat.min+target.fat.max)/2,
             fiber = target.fiber,
             sugar = target.sugar,
             sodium = target.sodium

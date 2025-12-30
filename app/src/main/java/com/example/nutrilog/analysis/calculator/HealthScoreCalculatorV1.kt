@@ -1,7 +1,7 @@
 package com.example.nutrilog.analysis.calculator
 
-import com.example.nutrilog.data.entities.NutritionFacts
 import com.example.nutrilog.shared.HealthScore
+import com.example.nutrilog.shared.NutritionFacts
 import com.example.nutrilog.shared.NutritionTarget
 import com.example.nutrilog.shared.Range
 import kotlin.math.max

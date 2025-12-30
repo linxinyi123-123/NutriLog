@@ -19,12 +19,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,8 +54,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.nutrilog.data.entities.FoodItem
+import com.example.nutrilog.data.entities.FoodCombo
 import com.example.nutrilog.data.entities.MealRecord
-import com.example.nutrilog.ui.viewmodels.MainViewModel
+import com.example.nutrilog.ui.viewmodels.AddRecordViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -59,34 +65,41 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AddRecordScreen(
     navController: NavController,
-    viewModel: MainViewModel,
+    viewModel: AddRecordViewModel,
     recordId: Long? = null
 ) {
     val isEditing = recordId != null
     val scope = rememberCoroutineScope()
     
-    // 状态管理
-    var selectedFoods by remember { mutableStateOf<List<Pair<FoodItem, Double>>>(emptyList()) }
+    // 从ViewModel获取状态
+    val selectedFoods by viewModel.selectedFoods.collectAsState()
+    val foodCombos by viewModel.foodCombos.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val showSaveComboDialog by viewModel.showSaveComboDialog.collectAsState()
+    val comboName by viewModel.comboName.collectAsState()
+    val comboDescription by viewModel.comboDescription.collectAsState()
+    
+    // 本地状态
     var showFoodSearch by remember { mutableStateOf(false) }
+    var showComboMenu by remember { mutableStateOf(false) }
+    var recordSaved by remember { mutableStateOf(false) }
     
     // 获取当前日期和时间（合并为一个字段）
     var currentDateTime by remember { mutableStateOf("${LocalDate.now().format(DateTimeFormatter.ISO_DATE)} ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))}") }
     
-    // 加载现有记录数据（如果是编辑模式）
+    // 编辑模式：加载已有记录数据
     LaunchedEffect(recordId) {
         if (isEditing && recordId != null) {
-            try {
-                val record = viewModel.getMealRecordById(recordId)
-                if (record != null) {
-                    currentDateTime = "${record.date} ${record.time}"
-                    
-                    // 加载记录的食物列表
-                    val foods = viewModel.getFoodsForRecord(recordId)
-                    selectedFoods = foods
-                }
-            } catch (e: Exception) {
-                // 处理加载错误
-            }
+            viewModel.loadRecordForEditing(recordId)
+        }
+    }
+    
+    // 处理错误消息
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            // 这里可以显示Snackbar或其他错误提示
+            println("错误: $message")
         }
     }
 
@@ -96,7 +109,6 @@ fun AddRecordScreen(
                 title = {
                     Text(
                         if (isEditing) "编辑饮食记录" else "新建饮食记录"
-
                     )
                 },
                 navigationIcon = {
@@ -108,44 +120,67 @@ fun AddRecordScreen(
                     }
                 },
                 actions = {
-                    Button(
-                        onClick = {
-                            // 解析合并的日期时间字符串
-                            val parts = currentDateTime.split(" ")
-                            val date = if (parts.size >= 1) parts[0] else LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-                            val time = if (parts.size >= 2) parts[1] else LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
-                            
-                            if (isEditing && recordId != null) {
-                                // 编辑模式：创建更新后的记录
-                                val updatedRecord = MealRecord(
-                                    id = recordId,
-                                    date = date,
-                                    time = time,
-                                    mealType = com.example.nutrilog.data.entities.MealType.LUNCH, // 默认值
-                                    location = com.example.nutrilog.data.entities.MealLocation.HOME, // 默认值
-                                    mood = 3, // 默认值
-                                    note = "" // 空备注
-                                )
-                                viewModel.updateMealRecordWithFoods(updatedRecord, selectedFoods)
-                                // 已修复：删除旧的关联食物并添加新关联
-                            } else {
-                                // 新建模式：创建新记录
-                                val record = MealRecord(
-                                    date = date,
-                                    time = time,
-                                    mealType = com.example.nutrilog.data.entities.MealType.LUNCH, // 默认值
-                                    location = com.example.nutrilog.data.entities.MealLocation.HOME, // 默认值
-                                    mood = 3, // 默认值
-                                    note = "" // 空备注
-                                )
-                                viewModel.addMealRecordWithFoods(record, selectedFoods)
-                            }
-                            navController.popBackStack()
-                        },
-                        enabled = selectedFoods.isNotEmpty(),
-                        modifier = Modifier.height(36.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(if (isEditing) "更新" else "保存", fontSize = 14.sp)
+                        // 保存为组合按钮（在保存按钮左边）
+                        if (selectedFoods.isNotEmpty()) {
+                            Button(
+                                onClick = { viewModel.showSaveComboDialog() },
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text("保存为组合", fontSize = 14.sp)
+                            }
+                        }
+                        
+                        // 保存记录按钮
+                        Button(
+                            onClick = {
+                                    // 解析合并的日期时间字符串
+                                    val parts = currentDateTime.split(" ")
+                                    val date = if (parts.size >= 1) parts[0] else LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+                                    val time = if (parts.size >= 2) parts[1] else LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+                                    
+                                    if (isEditing && recordId != null) {
+                                        // 编辑模式：创建更新后的记录
+                                        val updatedRecord = MealRecord(
+                                            id = recordId,
+                                            date = date,
+                                            time = time,
+                                            mealType = com.example.nutrilog.data.entities.MealType.LUNCH, // 默认值
+                                            location = com.example.nutrilog.data.entities.MealLocation.HOME, // 默认值
+                                            mood = 3, // 默认值
+                                            note = "" // 空备注
+                                        )
+                                        viewModel.updateMealRecord(updatedRecord) {
+                                            // 更新成功后设置标志并导航回主界面
+                                            recordSaved = true
+                                            navController.popBackStack()
+                                        }
+                                    } else {
+                                        // 新建模式：创建新记录
+                                        val record = MealRecord(
+                                            id = 0,
+                                            date = date,
+                                            time = time,
+                                            mealType = com.example.nutrilog.data.entities.MealType.LUNCH, // 默认值
+                                            location = com.example.nutrilog.data.entities.MealLocation.HOME, // 默认值
+                                            mood = 3, // 默认值
+                                            note = "" // 空备注
+                                        )
+                                        viewModel.saveMealRecord(record) {
+                                            // 保存成功后设置标志并导航回主界面
+                                            recordSaved = true
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                },
+                                enabled = selectedFoods.isNotEmpty(),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text(if (isEditing) "更新" else "保存", fontSize = 14.sp)
+                            }
                     }
                 }
             )
@@ -170,13 +205,12 @@ fun AddRecordScreen(
                 selectedFoods = selectedFoods,
                 onAddFoodClick = { showFoodSearch = true },
                 onFoodQuantityChange = { food, newQuantity ->
-                    selectedFoods = selectedFoods.map { 
-                        if (it.first.id == food.id) it.first to newQuantity else it 
-                    }
+                    viewModel.updateFoodPortion(food, newQuantity)
                 },
                 onRemoveFood = { food ->
-                    selectedFoods = selectedFoods.filter { it.first.id != food.id }
-                }
+                    viewModel.removeFood(food)
+                },
+                onSelectComboClick = { showComboMenu = true }
             )
         }
         
@@ -186,17 +220,33 @@ fun AddRecordScreen(
                 viewModel = viewModel,
                 onDismiss = { showFoodSearch = false },
                 onFoodSelected = { food ->
-                    // 如果食物已经存在，更新数量；否则添加新食物
-                    val existingFood = selectedFoods.find { it.first.id == food.id }
-                    if (existingFood != null) {
-                        selectedFoods = selectedFoods.map { 
-                            if (it.first.id == food.id) it.first to (it.second + 100.0) else it 
-                        }
-                    } else {
-                        selectedFoods = selectedFoods + (food to 100.0)
-                    }
+                    viewModel.addFood(food)
                     showFoodSearch = false
                 }
+            )
+        }
+        
+        // 保存组合对话框
+        if (showSaveComboDialog) {
+            SaveComboDialog(
+                comboName = comboName,
+                comboDescription = comboDescription,
+                onComboNameChange = { viewModel.updateComboName(it) },
+                onComboDescriptionChange = { viewModel.updateComboDescription(it) },
+                onSave = { viewModel.saveAsCombo() },
+                onCancel = { viewModel.hideSaveComboDialog() }
+            )
+        }
+        
+        // 组合选择对话框
+        if (showComboMenu) {
+            ComboSelectionDialog(
+                foodCombos = foodCombos,
+                onComboSelected = { comboId ->
+                    viewModel.applyCombo(comboId)
+                    showComboMenu = false
+                },
+                onDismiss = { showComboMenu = false }
             )
         }
     }
@@ -232,11 +282,121 @@ fun TimeSection(
 }
 
 @Composable
+fun SaveComboDialog(
+    comboName: String,
+    comboDescription: String,
+    onComboNameChange: (String) -> Unit,
+    onComboDescriptionChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onCancel: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("保存为常用组合") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = comboName,
+                    onValueChange = onComboNameChange,
+                    label = { Text("组合名称（可选）") },
+                    placeholder = { Text("留空将使用前5个食物名称") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = comboDescription,
+                    onValueChange = onComboDescriptionChange,
+                    label = { Text("组合描述（可选）") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = false,
+                    maxLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = onSave) {
+                Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text("取消")
+            }
+        }
+    )
+}
+
+@Composable
+fun ComboSelectionDialog(
+    foodCombos: List<FoodCombo>,
+    onComboSelected: (Long) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择常用组合") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+            ) {
+                if (foodCombos.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("暂无可用组合")
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(foodCombos) { combo ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable { onComboSelected(combo.id) },
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = combo.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (combo.description.isNotBlank()) {
+                                        Text(
+                                            text = combo.description,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
+        }
+    )
+}
+
+@Composable
 fun FoodSelectionSection(
     selectedFoods: List<Pair<FoodItem, Double>>,
     onAddFoodClick: () -> Unit,
     onFoodQuantityChange: (FoodItem, Double) -> Unit,
-    onRemoveFood: (FoodItem) -> Unit
+    onRemoveFood: (FoodItem) -> Unit,
+    onSelectComboClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -255,12 +415,26 @@ fun FoodSelectionSection(
                     fontWeight = FontWeight.Bold
                 )
                 
-                TextButton(
-                    onClick = onAddFoodClick,
-                    modifier = Modifier.height(40.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    Text("添加食物")
+                    // 可选组合按钮
+                    TextButton(
+                        onClick = onSelectComboClick,
+                        modifier = Modifier.height(40.dp)
+                    ) {
+                        Text("可选组合")
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    // 添加食物按钮
+                    TextButton(
+                        onClick = onAddFoodClick,
+                        modifier = Modifier.height(40.dp)
+                    ) {
+                        Text("添加食物")
+                    }
                 }
             }
             
@@ -375,7 +549,7 @@ fun FoodItemCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodSearchDialog(
-    viewModel: MainViewModel,
+    viewModel: AddRecordViewModel,
     onDismiss: () -> Unit,
     onFoodSelected: (FoodItem) -> Unit
 ) {

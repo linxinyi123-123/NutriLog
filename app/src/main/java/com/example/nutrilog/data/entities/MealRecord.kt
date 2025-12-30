@@ -51,7 +51,11 @@ data class MealRecord(
     val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    //记录标签功能
+    val calories: Double,
+    val tag: String = "未定义"
 ) {
     // 获取显示时间
     fun getDisplayTime(): String {

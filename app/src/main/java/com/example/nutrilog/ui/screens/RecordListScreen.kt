@@ -66,6 +66,11 @@ fun RecordListScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var recordToDelete by remember { mutableStateOf<MealRecord?>(null) }
     
+    // 当屏幕进入焦点时重新加载数据
+    LaunchedEffect(Unit) {
+        viewModel.loadAllMealRecords()
+    }
+    
     // 处理错误消息
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->

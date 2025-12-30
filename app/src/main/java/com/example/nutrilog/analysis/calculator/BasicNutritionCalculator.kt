@@ -1,9 +1,9 @@
 package com.example.nutrilog.analysis.calculator
 
 
-import com.example.nutrilog.data.entities.NutritionFacts
 import com.example.nutrilog.shared.FoodItem
 import com.example.nutrilog.shared.MealRecord
+import com.example.nutrilog.shared.NutritionFacts
 
 
 class BasicNutritionCalculator {
@@ -38,4 +38,5 @@ class BasicNutritionCalculator {
         }
         return total
     }
+
 }

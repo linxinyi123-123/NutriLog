@@ -21,5 +21,8 @@ enum class FoodCategory(
         fun fromString(value: String): FoodCategory {
             return values().find { it.displayName == value } ?: OTHERS
         }
+
     }
+
+
 }

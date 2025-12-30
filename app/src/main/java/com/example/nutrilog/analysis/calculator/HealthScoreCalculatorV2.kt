@@ -1,7 +1,7 @@
 package com.example.nutrilog.analysis.calculator
 
 import com.example.nutrilog.analysis.analyzer.MealPatternAnalyzer
-import com.example.nutrilog.analysis.models.RegularityAnalysis
+import com.example.nutrilog.analysis.analysis.RegularityAnalysis
 import com.example.nutrilog.shared.DailyAnalysis
 import com.example.nutrilog.shared.HealthScore
 import com.example.nutrilog.shared.NutritionTarget

@@ -1,4 +1,4 @@
-package com.example.nutrilog.analysis.models
+package com.example.nutrilog.analysis.analysis
 
 // 暂定
 data class MealAnalysis(

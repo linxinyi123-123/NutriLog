@@ -1,4 +1,4 @@
-package com.example.nutrilog.analysis.models
+package com.example.nutrilog.analysis.analysis
 
 import com.example.nutrilog.shared.HealthScore
 import com.example.nutrilog.shared.MealRecord

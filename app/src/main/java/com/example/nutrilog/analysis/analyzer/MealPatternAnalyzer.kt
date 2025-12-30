@@ -1,7 +1,7 @@
 package com.example.nutrilog.analysis.analyzer
 
-import com.example.nutrilog.analysis.models.RegularityAnalysis
-import com.example.nutrilog.analysis.models.TimeRegularity
+import com.example.nutrilog.analysis.analysis.RegularityAnalysis
+import com.example.nutrilog.analysis.analysis.TimeRegularity
 import com.example.nutrilog.data.entities.MealType
 import com.example.nutrilog.shared.MealRecord
 

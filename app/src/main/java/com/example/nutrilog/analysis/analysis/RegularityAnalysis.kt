@@ -1,4 +1,4 @@
-package com.example.nutrilog.analysis.models
+package com.example.nutrilog.analysis.analysis
 
 data class RegularityAnalysis(
     val breakfastScore: Double,      // 早餐规律性得分

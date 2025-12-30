@@ -17,25 +17,10 @@ fun MainScreen(
     navController: NavController,
     viewModel: MainViewModel
 ) {
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { 
-                    navController.navigate("add_record") 
-                }
-            ) {
-                Icon(Icons.Default.Add, "添加记录")
-            }
-        }
-    ) { padding ->
-        // 记录列表
-        Box(modifier = Modifier.padding(padding)) {
-            RecordListScreen(
-                navController = navController,
-                viewModel = viewModel
-            )
-        }
-    }
+    RecordListScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
 }
 
 @Preview(showBackground = true)

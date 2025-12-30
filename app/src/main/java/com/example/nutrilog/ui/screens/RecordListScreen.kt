@@ -82,7 +82,16 @@ fun RecordListScreen(
                 title = { Text("饮食记录") }
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { 
+                    navController.navigate("add_record") 
+                }
+            ) {
+                Icon(Icons.Default.Add, "添加记录")
+            }
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

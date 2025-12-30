@@ -96,6 +96,7 @@ fun AddRecordScreen(
                 title = {
                     Text(
                         if (isEditing) "编辑饮食记录" else "新建饮食记录"
+
                     )
                 },
                 navigationIcon = {

@@ -7,8 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,33 +43,51 @@ class MainActivity : ComponentActivity() {
         AppModule.provideDatabase(this)
         
         setContent {
-            NutriLogTheme {
-                NutriLogApp()
-            }
+            NutriLogApp()
         }
     }
+}
+
+// 主题状态共享对象
+object ThemeState {
+    val isDarkTheme = mutableStateOf(false)
+    var onThemeChange: ((Boolean) -> Unit)? = null
 }
 
 @Composable
 fun NutriLogApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val isSystemDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+    val isDarkTheme = rememberSaveable {
+        mutableStateOf(isSystemDarkTheme)
+    }
+    
+    // 同步主题状态到全局对象
+    LaunchedEffect(isDarkTheme.value) {
+        ThemeState.isDarkTheme.value = isDarkTheme.value
+    }
+    
+    ThemeState.onThemeChange = { newValue -> 
+        isDarkTheme.value = newValue
+    }
     
     // 创建ViewModel（使用我们的依赖注入）
     val mainViewModel: MainViewModel = remember {
         AppModule.provideMainViewModel(context)
     }
     
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(navController)
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = "home",
-            modifier = Modifier.padding(innerPadding)
-        ) {
+    NutriLogTheme(darkTheme = isDarkTheme.value) {
+        Scaffold(
+            bottomBar = {
+                BottomNavigationBar(navController)
+            }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = "home",
+                modifier = Modifier.padding(innerPadding)
+            ) {
             composable("home") {
                 HomeScreen(navController)
             }
@@ -164,6 +182,7 @@ fun NutriLogApp() {
             }
         }
     }
+  }
 }
 
 @Preview(showBackground = true)

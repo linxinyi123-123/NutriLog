@@ -10,10 +10,12 @@ enum class FoodCategory(
     FRUITS("水果类", 2..4),          // 各种水果
     PROTEIN("蛋白质类", 3..5),       // 肉、鱼、蛋、豆制品
     DAIRY("奶制品", 1..2),           // 牛奶、酸奶、奶酪
-    NUTS_SEEDS("坚果类", 0..1),      // 坚果、种子
+    NUTS("坚果类", 0..1),      // 坚果、种子
     OILS("油脂类", 2..3),            // 食用油、脂肪
-    SWEETS("甜食类", 0..1),          // 糖果、糕点
-    BEVERAGES("饮料类", 0..1);       // 含糖饮料
+    SNACKS("零食", 0..1),
+    BEVERAGES("饮料",1..8 ),
+    SEASONINGS("调味品",0..1 ),
+    OTHERS("其他", 0..1);
 
     companion object {
         fun fromFoodName(foodName: String): FoodCategory {

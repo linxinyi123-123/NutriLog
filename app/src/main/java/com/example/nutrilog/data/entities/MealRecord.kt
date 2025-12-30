@@ -41,9 +41,6 @@ data class MealRecord(
     @ColumnInfo(name = "photo_path")
     val photoPath: String? = null,  // 模拟图片路径
     
-    @ColumnInfo(name = "tags")
-    val tags: String? = null,  // 逗号分隔的标签
-    
     @ColumnInfo(name = "is_quick_add")
     val isQuickAdd: Boolean = false,  // 是否为快速添加
     
@@ -55,6 +52,8 @@ data class MealRecord(
 
     //记录标签功能
     val calories: Double,
+
+    @ColumnInfo(name = "tag")
     val tag: String = "未定义"
 ) {
     // 获取显示时间

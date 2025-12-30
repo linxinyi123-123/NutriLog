@@ -56,6 +56,7 @@ import androidx.navigation.NavController
 import com.example.nutrilog.data.entities.FoodItem
 import com.example.nutrilog.data.entities.FoodCombo
 import com.example.nutrilog.data.entities.MealRecord
+import com.example.nutrilog.data.entities.FoodTags
 import com.example.nutrilog.ui.viewmodels.AddRecordViewModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -79,6 +80,7 @@ fun AddRecordScreen(
     val showSaveComboDialog by viewModel.showSaveComboDialog.collectAsState()
     val comboName by viewModel.comboName.collectAsState()
     val comboDescription by viewModel.comboDescription.collectAsState()
+    val selectedTag by viewModel.selectedTag.collectAsState()
     
     // 本地状态
     var showFoodSearch by remember { mutableStateOf(false) }
@@ -142,6 +144,11 @@ fun AddRecordScreen(
                                     val date = if (parts.size >= 1) parts[0] else LocalDate.now().format(DateTimeFormatter.ISO_DATE)
                                     val time = if (parts.size >= 2) parts[1] else LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
                                     
+                                    // 计算总热量
+                                    val totalCalories = selectedFoods.sumOf { (food, portion) -> 
+                                        food.calories * portion / 100 
+                                    }
+                                    
                                     if (isEditing && recordId != null) {
                                         // 编辑模式：创建更新后的记录
                                         val updatedRecord = MealRecord(
@@ -151,7 +158,8 @@ fun AddRecordScreen(
                                             mealType = com.example.nutrilog.data.entities.MealType.LUNCH, // 默认值
                                             location = com.example.nutrilog.data.entities.MealLocation.HOME, // 默认值
                                             mood = 3, // 默认值
-                                            note = "" // 空备注
+                                            note = "", // 空备注
+                                            calories = totalCalories // 实际计算的热量值
                                         )
                                         viewModel.updateMealRecord(updatedRecord) {
                                             // 更新成功后设置标志并导航回主界面
@@ -167,7 +175,8 @@ fun AddRecordScreen(
                                             mealType = com.example.nutrilog.data.entities.MealType.LUNCH, // 默认值
                                             location = com.example.nutrilog.data.entities.MealLocation.HOME, // 默认值
                                             mood = 3, // 默认值
-                                            note = "" // 空备注
+                                            note = "", // 空备注
+                                            calories = totalCalories // 实际计算的热量值
                                         )
                                         viewModel.saveMealRecord(record) {
                                             // 保存成功后设置标志并导航回主界面
@@ -196,6 +205,16 @@ fun AddRecordScreen(
             TimeSection(
                 dateTime = currentDateTime,
                 onDateTimeChange = { currentDateTime = it }
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // 标签选择区域
+            TagSelectionSection(
+                selectedTag = selectedTag,
+                onTagSelected = { tag ->
+                    viewModel.updateSelectedTag(tag)
+                }
             )
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -675,6 +694,79 @@ fun FoodSearchResultItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+}
+
+// 标签显示组件
+@Composable
+fun TagChip(
+    tag: String,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
+) {
+    val backgroundColor = if (isSelected) {
+        FoodTags.TAG_COLORS[tag] ?: MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    
+    val textColor = if (isSelected) {
+        FoodTags.TAG_TEXT_COLORS[tag] ?: MaterialTheme.colorScheme.onPrimary
+    } else {
+        FoodTags.TAG_TEXT_COLORS[tag] ?: MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    
+    Card(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor,
+            contentColor = textColor
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 2.dp)
+    ) {
+        Text(
+            text = tag,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        )
+    }
+}
+
+// 标签选择组件
+@Composable
+fun TagSelectionSection(
+    selectedTag: String,
+    onTagSelected: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "标签",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FoodTags.TAG_LIST.forEach { tag ->
+                    TagChip(
+                        tag = tag,
+                        isSelected = tag == selectedTag,
+                        onClick = { onTagSelected(tag) }
+                    )
+                }
+            }
         }
     }
 }

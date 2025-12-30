@@ -46,6 +46,10 @@ class AddRecordViewModel(
     private val _comboDescription = MutableStateFlow("")
     val comboDescription: StateFlow<String> = _comboDescription.asStateFlow()
     
+    // 当前选择的标签
+    private val _selectedTag = MutableStateFlow("未定义")
+    val selectedTag: StateFlow<String> = _selectedTag.asStateFlow()
+    
     init {
         loadFoodCombos()
     }
@@ -104,7 +108,12 @@ class AddRecordViewModel(
             _errorMessage.value = null
             
             try {
-                val recordId = mealRecordRepository.addMealRecordWithFoods(record, _selectedFoods.value)
+                // 创建包含标签的记录（热量已经在UI层计算并传入）
+                val recordWithTag = record.copy(
+                    tag = _selectedTag.value
+                )
+                
+                val recordId = mealRecordRepository.addMealRecordWithFoods(recordWithTag, _selectedFoods.value)
                 clearSelectedFoods()
                 onSuccess() // 保存成功后回调
             } catch (e: Exception) {
@@ -122,7 +131,12 @@ class AddRecordViewModel(
             _errorMessage.value = null
             
             try {
-                mealRecordRepository.updateMealRecordWithFoods(record, _selectedFoods.value)
+                // 创建包含标签的记录（热量已经在UI层计算并传入）
+                val recordWithTag = record.copy(
+                    tag = _selectedTag.value
+                )
+                
+                mealRecordRepository.updateMealRecordWithFoods(recordWithTag, _selectedFoods.value)
                 onSuccess() // 更新成功后回调
             } catch (e: Exception) {
                 _errorMessage.value = "更新记录失败: ${e.message}"
@@ -154,6 +168,11 @@ class AddRecordViewModel(
     // 更新组合描述
     fun updateComboDescription(description: String) {
         _comboDescription.value = description
+    }
+    
+    // 更新选择的标签
+    fun updateSelectedTag(tag: String) {
+        _selectedTag.value = tag
     }
     
     // 保存为组合
@@ -274,6 +293,8 @@ class AddRecordViewModel(
                     // 获取记录关联的食物
                     val foods = mealRecordRepository.getFoodsForRecord(recordId)
                     _selectedFoods.value = foods
+                    // 设置记录的标签
+                    _selectedTag.value = record.tag
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "加载记录失败: ${e.message}"

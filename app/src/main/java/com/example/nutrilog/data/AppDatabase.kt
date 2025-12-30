@@ -31,8 +31,8 @@ import com.example.nutrilog.data.entities.RecordFoodItem
         FoodCombo::class,
         ComboFood::class
     ],
-    version = 4,
-    exportSchema = false
+    version = 5,
+    exportSchema = true
 )
 @TypeConverters(
     FoodCategoryConverter::class,
@@ -59,7 +59,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "nutrilog_database"
                 ).addCallback(DatabaseCallback(context))
-                 .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                 .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                  .fallbackToDestructiveMigration()
                  .build()
                 INSTANCE = instance
@@ -115,6 +115,33 @@ abstract class AppDatabase : RoomDatabase() {
                 // 为关联表创建索引
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_ComboFood_comboId ON ComboFood(comboId)")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_ComboFood_foodId ON ComboFood(foodId)")
+            }
+        }
+        
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+
+            }
+        }
+        
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // 为meal_records表添加标签字段
+                addColumnIfNotExists(database, "meal_records", "tag", "TEXT NOT NULL DEFAULT '未定义'")
+                
+                // 为meal_records表添加热量字段
+                addColumnIfNotExists(database, "meal_records", "calories", "REAL NOT NULL DEFAULT 0.0")
+            }
+            
+            private fun addColumnIfNotExists(database: SupportSQLiteDatabase, tableName: String, columnName: String, columnType: String) {
+                try {
+                    // 尝试查询该列，如果列不存在会抛出异常
+                    database.query("SELECT $columnName FROM $tableName LIMIT 0")
+                    // 如果查询成功，说明列已存在，跳过添加
+                } catch (e: Exception) {
+                    // 如果查询失败，说明列不存在，需要添加
+                    database.execSQL("ALTER TABLE $tableName ADD COLUMN $columnName $columnType")
+                }
             }
         }
     }

@@ -10,7 +10,8 @@ import androidx.room.PrimaryKey
         parentColumns = ["id"],
         childColumns = ["comboId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [androidx.room.Index(value = ["comboId"])]
 )
 data class ComboFood(
     @PrimaryKey(autoGenerate = true)

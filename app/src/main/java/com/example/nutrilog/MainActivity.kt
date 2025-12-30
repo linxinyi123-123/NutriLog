@@ -33,6 +33,7 @@ import com.example.nutrilog.ui.screens.ReportGenerationScreen
 import com.example.nutrilog.ui.screens.ReportPreviewScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
+import com.example.nutrilog.ui.viewmodels.AddRecordViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,18 +142,24 @@ fun NutriLogApp() {
             
             // 添加记录页面
             composable("add_record") {
+                val addRecordViewModel: AddRecordViewModel = remember {
+                    AppModule.provideAddRecordViewModel(context)
+                }
                 AddRecordScreen(
                     navController = navController,
-                    viewModel = mainViewModel
+                    viewModel = addRecordViewModel
                 )
             }
             
             // 编辑记录页面
             composable("edit_record/{recordId}") { backStackEntry ->
                 val recordId = backStackEntry.arguments?.getString("recordId")?.toLongOrNull()
+                val addRecordViewModel: AddRecordViewModel = remember {
+                    AppModule.provideAddRecordViewModel(context)
+                }
                 AddRecordScreen(
                     navController = navController,
-                    viewModel = mainViewModel,
+                    viewModel = addRecordViewModel,
                     recordId = recordId
                 )
             }

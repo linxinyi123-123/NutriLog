@@ -1,4 +1,4 @@
-package com.example.nutrilog.analysis.data
+package com.example.nutrilog.shared
 
 //用于计算
 enum class FoodCategory(

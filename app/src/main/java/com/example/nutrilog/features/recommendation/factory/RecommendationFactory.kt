@@ -2,23 +2,19 @@ package com.example.nutrilog.features.recommendation.factory
 
 import com.example.nutrilog.features.recommendation.algorithm.*
 import com.example.nutrilog.features.recommendation.engine.RecommendationContext
-import com.example.nutrilog.features.recommendation.interfaces.NutritionalGap
 import com.example.nutrilog.features.recommendation.model.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 /**
  * 推荐工厂，负责生成和管理所有推荐
+ * D6更新：集成ContextAwareRecommender
  */
 class RecommendationFactory(
     private val gapRecommender: NutritionalGapRecommender = NutritionalGapRecommender(),
-    private val goalRecommender: GoalBasedRecommender = GoalBasedRecommender()
-    // 注意：ContextAwareRecommender将在D6实现
+    private val goalRecommender: GoalBasedRecommender = GoalBasedRecommender(),
+    private val contextRecommender: ContextAwareRecommender = ContextAwareRecommender()
 ) {
-
-    private val ioScope = CoroutineScope(Dispatchers.IO)
 
     /**
      * 生成所有类型的推荐（异步）
@@ -31,21 +27,21 @@ class RecommendationFactory(
 
             // 1. 基于营养缺口的推荐
             val gapRecommendations = gapRecommender.generateRecommendations(
-                context.nutritionalGaps,
+                context.nutritionalGaps ?: emptyList(),
                 context
             )
             allRecommendations.addAll(gapRecommendations)
 
             // 2. 基于健康目标的推荐
             val goalRecommendations = goalRecommender.generateGoalRecommendations(
-                context.healthGoals,
+                context.healthGoals ?: emptyList(),
                 context
             )
             allRecommendations.addAll(goalRecommendations)
 
-            // 3. 基于场景的推荐（将在D6实现）
-            // val contextRecommendations = contextRecommender.generateContextRecommendations(context)
-            // allRecommendations.addAll(contextRecommendations)
+            // 3. 基于场景的推荐（D6新增）
+            val contextRecommendations = contextRecommender.generateContextRecommendations(context)
+            allRecommendations.addAll(contextRecommendations)
 
             // 去重、排序、限制数量
             processRecommendations(allRecommendations)
@@ -124,6 +120,15 @@ class RecommendationFactory(
     }
 
     /**
+     * 获取基于场景的推荐
+     */
+    suspend fun getContextBasedRecommendations(
+        context: RecommendationContext
+    ): List<Recommendation> {
+        return contextRecommender.generateContextRecommendations(context)
+    }
+
+    /**
      * 获取高优先级推荐（用于通知）
      */
     suspend fun getHighPriorityRecommendations(
@@ -156,5 +161,12 @@ class RecommendationFactory(
     ): Boolean {
         val highPriorityRecs = getHighPriorityRecommendations(context)
         return highPriorityRecs.any { it.id !in seenRecommendationIds }
+    }
+
+    /**
+     * 获取当前用餐场景描述
+     */
+    fun getCurrentScenarioDescription(context: RecommendationContext): String {
+        return contextRecommender.getCurrentScenario(context)
     }
 }

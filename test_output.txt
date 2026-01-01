@@ -1,0 +1,673 @@
+Initialized native services in: C:\Users\林忻怡\.gradle\native
+Initialized jansi services in: C:\Users\林忻怡\.gradle\native
+The client will now receive all logging from the daemon (pid: 25168). The daemon log file: C:\Users\林忻怡\.gradle\daemon\8.13\daemon-25168.out.log
+Starting 5th build in daemon [uptime: 7 mins 14.778 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 16 worker leases.
+Now considering [D:\AAWorkSpace\NutriLog] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'D:\AAWorkSpace\NutriLog\settings.gradle.kts'.
+Projects loaded. Root project using build file 'D:\AAWorkSpace\NutriLog\build.gradle.kts'.
+Included projects: [root project 'NutriLog', project ':app']
+
+> Configure project :
+Evaluating root project 'NutriLog' using build file 'D:\AAWorkSpace\NutriLog\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application', version: '8.13.0', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '1.9.22', apply: false]
+
+> Configure project :app
+Evaluating project ':app' using build file 'D:\AAWorkSpace\NutriLog\app\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application']
+Resolved plugin [id: 'org.jetbrains.kotlin.android']
+Resolved plugin [id: 'kotlin-kapt']
+Resolved plugin [id: 'kotlin-parcelize']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle82 variant
+All projects evaluated.
+Task name matched 'testDebugUnitTest'
+Selected primary task 'testDebugUnitTest' from project :
+Tasks to be executed: [task ':app:checkKotlinGradlePluginConfigurationErrors', task ':app:preBuild', task ':app:preDebugBuild', task ':app:checkDebugAarMetadata', task ':app:processDebugNavigationResources', task ':app:compileDebugNavigationResources', task ':app:generateDebugResValues', task ':app:mapDebugSourceSetPaths', task ':app:generateDebugResources', task ':app:mergeDebugResources', task ':app:packageDebugResources', task ':app:parseDebugLocalResources', task ':app:createDebugCompatibleScreenManifests', task ':app:extractDeepLinksDebug', task ':app:processDebugMainManifest', task ':app:processDebugManifest', task ':app:processDebugManifestForPackage', task ':app:processDebugResources', task ':app:kaptGenerateStubsDebugKotlin', task ':app:kaptDebugKotlin', task ':app:compileDebugKotlin', task ':app:javaPreCompileDebug', task ':app:compileDebugJavaWithJavac', task ':app:bundleDebugClassesToRuntimeJar', task ':app:bundleDebugClassesToCompileJar', task ':app:kaptGenerateStubsDebugUnitTestKotlin', task ':app:kaptDebugUnitTestKotlin', task ':app:compileDebugUnitTestKotlin', task ':app:preDebugUnitTestBuild', task ':app:javaPreCompileDebugUnitTest', task ':app:compileDebugUnitTestJavaWithJavac', task ':app:processDebugJavaRes', task ':app:processDebugUnitTestJavaRes', task ':app:testDebugUnitTest']
+Tasks that were excluded: []
+Resolve mutations for :app:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+Caching disabled for task ':app:checkKotlinGradlePluginConfigurationErrors' because:
+  Build cache is disabled
+Task ':app:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :app:preBuild (Thread[Execution worker Thread 9,5,main]) started.
+:app:preBuild (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+Resolve mutations for :app:preDebugBuild (Thread[Execution worker Thread 9,5,main]) started.
+:app:preDebugBuild (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:preDebugBuild UP-TO-DATE
+Skipping task ':app:preDebugBuild' as it has no actions.
+Resolve mutations for :app:checkDebugAarMetadata (Thread[Execution worker Thread 9,5,main]) started.
+:app:checkDebugAarMetadata (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':app:checkDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkDebugAarMetadata' as it is up-to-date.
+Resolve mutations for :app:processDebugNavigationResources (Thread[Execution worker Thread 9,5,main]) started.
+:app:processDebugNavigationResources (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:processDebugNavigationResources UP-TO-DATE
+Caching disabled for task ':app:processDebugNavigationResources' because:
+  Build cache is disabled
+Skipping task ':app:processDebugNavigationResources' as it is up-to-date.
+Resolve mutations for :app:compileDebugNavigationResources (Thread[Execution worker Thread 9,5,main]) started.
+:app:compileDebugNavigationResources (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+Caching disabled for task ':app:compileDebugNavigationResources' because:
+  Build cache is disabled
+Skipping task ':app:compileDebugNavigationResources' as it is up-to-date.
+Resolve mutations for :app:generateDebugResValues (Thread[Execution worker Thread 4,5,main]) started.
+:app:generateDebugResValues (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :app:generateDebugResValues UP-TO-DATE
+Caching disabled for task ':app:generateDebugResValues' because:
+  Build cache is disabled
+Skipping task ':app:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :app:mapDebugSourceSetPaths (Thread[Execution worker Thread 4,5,main]) started.
+:app:mapDebugSourceSetPaths (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+Caching disabled for task ':app:mapDebugSourceSetPaths' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mapDebugSourceSetPaths' as it is up-to-date.
+Resolve mutations for :app:generateDebugResources (Thread[Execution worker Thread 4,5,main]) started.
+:app:generateDebugResources (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :app:generateDebugResources UP-TO-DATE
+Caching disabled for task ':app:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:generateDebugResources' as it is up-to-date.
+Resolve mutations for :app:mergeDebugResources (Thread[Execution worker Thread 3,5,main]) started.
+:app:mergeDebugResources (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :app:mergeDebugResources UP-TO-DATE
+Caching disabled for task ':app:mergeDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:mergeDebugResources' as it is up-to-date.
+Resolve mutations for :app:packageDebugResources (Thread[Execution worker Thread 3,5,main]) started.
+:app:packageDebugResources (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :app:packageDebugResources UP-TO-DATE
+Caching disabled for task ':app:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:packageDebugResources' as it is up-to-date.
+Resolve mutations for :app:parseDebugLocalResources (Thread[Execution worker Thread 3,5,main]) started.
+:app:parseDebugLocalResources (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :app:parseDebugLocalResources UP-TO-DATE
+Caching disabled for task ':app:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':app:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :app:createDebugCompatibleScreenManifests (Thread[Execution worker Thread 3,5,main]) started.
+:app:createDebugCompatibleScreenManifests (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+Caching disabled for task ':app:createDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createDebugCompatibleScreenManifests' as it is up-to-date.
+Resolve mutations for :app:extractDeepLinksDebug (Thread[Execution worker,5,main]) started.
+:app:extractDeepLinksDebug (Thread[Execution worker,5,main]) started.
+
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+Caching disabled for task ':app:extractDeepLinksDebug' because:
+  Build cache is disabled
+Skipping task ':app:extractDeepLinksDebug' as it is up-to-date.
+Resolve mutations for :app:processDebugMainManifest (Thread[Execution worker,5,main]) started.
+:app:processDebugMainManifest (Thread[Execution worker,5,main]) started.
+
+> Task :app:processDebugMainManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugMainManifest' because:
+  Build cache is disabled
+Skipping task ':app:processDebugMainManifest' as it is up-to-date.
+Resolve mutations for :app:processDebugManifest (Thread[Execution worker,5,main]) started.
+:app:processDebugManifest (Thread[Execution worker,5,main]) started.
+
+> Task :app:processDebugManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugManifest' because:
+  Build cache is disabled
+Skipping task ':app:processDebugManifest' as it is up-to-date.
+Resolve mutations for :app:processDebugManifestForPackage (Thread[Execution worker,5,main]) started.
+:app:processDebugManifestForPackage (Thread[Execution worker,5,main]) started.
+
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+Custom actions are attached to task ':app:processDebugManifestForPackage'.
+Caching disabled for task ':app:processDebugManifestForPackage' because:
+  Build cache is disabled
+Skipping task ':app:processDebugManifestForPackage' as it is up-to-date.
+Resolve mutations for :app:processDebugResources (Thread[Execution worker,5,main]) started.
+:app:processDebugResources (Thread[Execution worker,5,main]) started.
+
+> Task :app:processDebugResources UP-TO-DATE
+Caching disabled for task ':app:processDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:processDebugResources' as it is up-to-date.
+Resolve mutations for :app:kaptGenerateStubsDebugKotlin (Thread[Execution worker,5,main]) started.
+:app:kaptGenerateStubsDebugKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :app:kaptGenerateStubsDebugKotlin UP-TO-DATE
+Caching disabled for task ':app:kaptGenerateStubsDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:kaptGenerateStubsDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:kaptDebugKotlin (Thread[Execution worker,5,main]) started.
+:app:kaptDebugKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :app:kaptDebugKotlin UP-TO-DATE
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\java', not found
+Caching disabled for task ':app:kaptDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:kaptDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:compileDebugKotlin (Thread[Execution worker,5,main]) started.
+:app:compileDebugKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :app:compileDebugKotlin UP-TO-DATE
+Caching disabled for task ':app:compileDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:compileDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:javaPreCompileDebug (Thread[Execution worker,5,main]) started.
+:app:javaPreCompileDebug (Thread[Execution worker,5,main]) started.
+
+> Task :app:javaPreCompileDebug UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileDebug' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :app:compileDebugJavaWithJavac (Thread[Execution worker,5,main]) started.
+:app:compileDebugJavaWithJavac (Thread[Execution worker,5,main]) started.
+
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':app:compileDebugJavaWithJavac'.
+Caching disabled for task ':app:compileDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':app:compileDebugJavaWithJavac' as it is up-to-date.
+No compile result for :app:compileDebugJavaWithJavac
+Resolve mutations for :app:bundleDebugClassesToRuntimeJar (Thread[Execution worker,5,main]) started.
+:app:bundleDebugClassesToRuntimeJar (Thread[Execution worker,5,main]) started.
+
+> Task :app:bundleDebugClassesToRuntimeJar UP-TO-DATE
+Caching disabled for task ':app:bundleDebugClassesToRuntimeJar' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:bundleDebugClassesToRuntimeJar' as it is up-to-date.
+work action resolve classes.jar (project :app) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :app:bundleDebugClassesToCompileJar (Thread[Execution worker,5,main]) started.
+:app:bundleDebugClassesToCompileJar (Thread[Execution worker,5,main]) started.
+
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+Caching disabled for task ':app:bundleDebugClassesToCompileJar' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:bundleDebugClassesToCompileJar' as it is up-to-date.
+work action resolve classes.jar (project :app) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :app:kaptGenerateStubsDebugUnitTestKotlin (Thread[Execution worker,5,main]) started.
+:app:kaptGenerateStubsDebugUnitTestKotlin (Thread[Execution worker,5,main]) started.
+Resolve mutations for :app:preDebugUnitTestBuild (Thread[Execution worker Thread 2,5,main]) started.
+:app:preDebugUnitTestBuild (Thread[Execution worker Thread 6,5,main]) started.
+
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+Skipping task ':app:preDebugUnitTestBuild' as it has no actions.
+Resolve mutations for :app:javaPreCompileDebugUnitTest (Thread[Execution worker Thread 6,5,main]) started.
+:app:javaPreCompileDebugUnitTest (Thread[Execution worker Thread 6,5,main]) started.
+
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileDebugUnitTest' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileDebugUnitTest' as it is up-to-date.
+Resolve mutations for :app:processDebugJavaRes (Thread[Execution worker Thread 6,5,main]) started.
+:app:processDebugJavaRes (Thread[Execution worker Thread 6,5,main]) started.
+
+> Task :app:processDebugJavaRes UP-TO-DATE
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\resources', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\resources', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\main\resources', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debug\resources', not found
+Caching disabled for task ':app:processDebugJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processDebugJavaRes' as it is up-to-date.
+work action resolve out (project :app) (Thread[Execution worker Thread 6,5,main]) started.
+
+> Task :app:kaptGenerateStubsDebugUnitTestKotlin
+Caching disabled for task ':app:kaptGenerateStubsDebugUnitTestKotlin' because:
+  Build cache is disabled
+Task ':app:kaptGenerateStubsDebugUnitTestKotlin' is not up-to-date because:
+  Input property 'sources' file D:\AAWorkSpace\NutriLog\app\src\test\kotlin\com\example\nutrilog\features\recommendation\test\SimpleUnitTest.kt has changed.
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+Using Kotlin/JVM incremental compilation
+[KOTLIN] Kotlin compilation 'jdkHome' argument: null
+i: found daemon on port 17099 (2680332 ms old), trying to connect
+i: connected to the daemon
+Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0, 3], reportSeverity=2, requestedCompilationResults=[0], kotlinScriptExtensions=[]), areFileChangesKnown=true, modifiedFiles=[D:\AAWorkSpace\NutriLog\app\src\test\kotlin\com\example\nutrilog\features\recommendation\test\SimpleUnitTest.kt], deletedFiles=[], classpathChanges=NoChanges, workingDir=D:\AAWorkSpace\NutriLog\app\build\kotlin\kaptGenerateStubsDebugUnitTestKotlin\cacheable, multiModuleICSettings=MultiModuleICSettings(buildHistoryFile=D:\AAWorkSpace\NutriLog\app\build\kotlin\kaptGenerateStubsDebugUnitTestKotlin\local-state\build-history.bin, useModuleDetection=true), usePreciseJavaTracking=true, outputFiles=[D:\AAWorkSpace\NutriLog\app\build\tmp\kapt3\incrementalData\debugUnitTest, D:\AAWorkSpace\NutriLog\app\build\tmp\kapt3\stubs\debugUnitTest, D:\AAWorkSpace\NutriLog\app\build\kotlin\kaptGenerateStubsDebugUnitTestKotlin\cacheable, D:\AAWorkSpace\NutriLog\app\build\kotlin\kaptGenerateStubsDebugUnitTestKotlin\local-state])
+Resolve mutations for :app:kaptDebugUnitTestKotlin (Thread[Execution worker,5,main]) started.
+:app:kaptDebugUnitTestKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :app:kaptDebugUnitTestKotlin UP-TO-DATE
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+Caching disabled for task ':app:kaptDebugUnitTestKotlin' because:
+  Build cache is disabled
+Skipping task ':app:kaptDebugUnitTestKotlin' as it is up-to-date.
+Resolve mutations for :app:compileDebugUnitTestKotlin (Thread[Execution worker,5,main]) started.
+:app:compileDebugUnitTestKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :app:compileDebugUnitTestKotlin
+Caching disabled for task ':app:compileDebugUnitTestKotlin' because:
+  Build cache is disabled
+Task ':app:compileDebugUnitTestKotlin' is not up-to-date because:
+  Input property 'sources' file D:\AAWorkSpace\NutriLog\app\src\test\kotlin\com\example\nutrilog\features\recommendation\test\SimpleUnitTest.kt has changed.
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\debugUnitTest\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\kotlin', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\java', not found
+Kotlin source files: D:\AAWorkSpace\NutriLog\app\src\test\kotlin\com\example\nutrilog\features\recommendation\test\ScenarioRecommendationTest.kt, D:\AAWorkSpace\NutriLog\app\src\test\kotlin\com\example\nutrilog\features\recommendation\test\SimpleUnitTest.kt, D:\AAWorkSpace\NutriLog\app\src\test\java\com\example\nutrilog\CalculatorTest.kt, D:\AAWorkSpace\NutriLog\app\src\test\java\com\example\nutrilog\ExampleUnitTest.kt, D:\AAWorkSpace\NutriLog\app\src\test\java\com\example\nutrilog\features\recommendation\engine\RuleEngineTest.kt
+Java source files: 
+Script source files: 
+Script file extensions: 
+Using Kotlin/JVM incremental compilation
+[KOTLIN] Kotlin compilation 'jdkHome' argument: null
+i: found daemon on port 17099 (2682030 ms old), trying to connect
+i: connected to the daemon
+Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0, 3], reportSeverity=2, requestedCompilationResults=[0], kotlinScriptExtensions=[]), areFileChangesKnown=true, modifiedFiles=[D:\AAWorkSpace\NutriLog\app\src\test\kotlin\com\example\nutrilog\features\recommendation\test\SimpleUnitTest.kt], deletedFiles=[], classpathChanges=NoChanges, workingDir=D:\AAWorkSpace\NutriLog\app\build\kotlin\compileDebugUnitTestKotlin\cacheable, multiModuleICSettings=MultiModuleICSettings(buildHistoryFile=D:\AAWorkSpace\NutriLog\app\build\kotlin\compileDebugUnitTestKotlin\local-state\build-history.bin, useModuleDetection=true), usePreciseJavaTracking=true, outputFiles=[D:\AAWorkSpace\NutriLog\app\build\tmp\kotlin-classes\debugUnitTest, D:\AAWorkSpace\NutriLog\app\build\kotlin\compileDebugUnitTestKotlin\cacheable, D:\AAWorkSpace\NutriLog\app\build\kotlin\compileDebugUnitTestKotlin\local-state])
+Resolve mutations for :app:compileDebugUnitTestJavaWithJavac (Thread[Execution worker,5,main]) started.
+:app:compileDebugUnitTestJavaWithJavac (Thread[Execution worker,5,main]) started.
+
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+Skipping task ':app:compileDebugUnitTestJavaWithJavac' as it has no source files and no previous output files.
+Resolve mutations for :app:processDebugUnitTestJavaRes (Thread[Execution worker,5,main]) started.
+:app:processDebugUnitTestJavaRes (Thread[Execution worker,5,main]) started.
+
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\test\resources', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\resources', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\test\resources', not found
+file or directory 'D:\AAWorkSpace\NutriLog\app\src\testDebug\resources', not found
+Caching disabled for task ':app:processDebugUnitTestJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processDebugUnitTestJavaRes' as it is up-to-date.
+Resolve mutations for :app:testDebugUnitTest (Thread[Execution worker,5,main]) started.
+:app:testDebugUnitTest (Thread[Execution worker,5,main]) started.
+Could not write standard input to Gradle Test Executor 6.
+java.io.IOException: 管道正在被关闭。
+	at java.base/java.io.FileOutputStream.writeBytes(Native Method)
+	at java.base/java.io.FileOutputStream.write(FileOutputStream.java:349)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:81)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:142)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.writeBuffer(ExecOutputHandleRunner.java:98)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.forwardContent(ExecOutputHandleRunner.java:85)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.run(ExecOutputHandleRunner.java:64)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Could not write standard input to Gradle Test Executor 7.
+java.io.IOException: 管道正在被关闭。
+	at java.base/java.io.FileOutputStream.writeBytes(Native Method)
+	at java.base/java.io.FileOutputStream.write(FileOutputStream.java:349)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:81)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:142)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.writeBuffer(ExecOutputHandleRunner.java:98)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.forwardContent(ExecOutputHandleRunner.java:85)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.run(ExecOutputHandleRunner.java:64)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Could not write standard input to Gradle Test Executor 8.
+java.io.IOException: 管道正在被关闭。
+	at java.base/java.io.FileOutputStream.writeBytes(Native Method)
+	at java.base/java.io.FileOutputStream.write(FileOutputStream.java:349)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:81)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:142)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.writeBuffer(ExecOutputHandleRunner.java:98)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.forwardContent(ExecOutputHandleRunner.java:85)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.run(ExecOutputHandleRunner.java:64)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+> Task :app:testDebugUnitTest
+Caching disabled for task ':app:testDebugUnitTest' because:
+  Build cache is disabled
+Task ':app:testDebugUnitTest' is not up-to-date because:
+  Task has failed previously.
+file or directory 'D:\AAWorkSpace\NutriLog\app\build\intermediates\javac\debugUnitTest\compileDebugUnitTestJavaWithJavac\classes', not found
+Starting process 'Gradle Test Executor 6'. Working directory: D:\AAWorkSpace\NutriLog\app Command: D:\JDK17\jdk-17.0.14+7\bin\java.exe -Djava.awt.headless=true -Djava.library.path=D:\JDK17\jdk-17.0.14+7\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\林忻怡\bin;D:\Git\mingw64\bin;D:\Git\usr\local\bin;D:\Git\usr\bin;D:\Git\usr\bin;D:\Git\mingw64\bin;D:\Git\usr\bin;C:\Users\林忻怡\bin;D:\JDK17\jdk-17.0.14+7\bin;D:\JDK17\jdk-17.0.14+7\jre\bin;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\;MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;D:\Maven\apache-maven-3.6.3\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;D:\node;C:\Program Files\Bandizip;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林 忻怡\AppData\Local\Microsoft\WindowsApps;D:\MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Anaconda;D:\Anaconda\Scripts;D:\Anaconda\Library\bin;D:\Anaconda\Library\mingw-w64\bin;D:\Anaconda\Library\usr\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Maven\apache-maven-3.9.9\bin;C:\Users\林忻怡\AppData\Roaming\npm;D:\VScode\Microsoft VS Code\bin;D:\Git\usr\bin\vendor_perl;D:\Git\usr\bin\core_perl;.;D:\AAWorkSpace\NutriLog\app\src\testDebug\jniLibs;D:\AAWorkSpace\NutriLog\app\src\test\jniLibs -Dorg.gradle.internal.worker.tmpdir=D:\AAWorkSpace\NutriLog\app\build\tmp\testDebugUnitTest\work --add-opens=java.base/java.io=ALL-UNNAMED @C:\Users\林忻怡\.gradle\.tmp\gradle-worker-classpath11988686772391872161txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 6'
+Successfully started process 'Gradle Test Executor 6'
+错误: 找不到或无法加载主类 worker.org.gradle.process.internal.worker.GradleWorkerMain
+原因: java.lang.ClassNotFoundException: worker.org.gradle.process.internal.worker.GradleWorkerMain
+Starting process 'Gradle Test Executor 7'. Working directory: D:\AAWorkSpace\NutriLog\app Command: D:\JDK17\jdk-17.0.14+7\bin\java.exe -Djava.awt.headless=true -Djava.library.path=D:\JDK17\jdk-17.0.14+7\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\林忻怡\bin;D:\Git\mingw64\bin;D:\Git\usr\local\bin;D:\Git\usr\bin;D:\Git\usr\bin;D:\Git\mingw64\bin;D:\Git\usr\bin;C:\Users\林忻怡\bin;D:\JDK17\jdk-17.0.14+7\bin;D:\JDK17\jdk-17.0.14+7\jre\bin;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\;MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;D:\Maven\apache-maven-3.6.3\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;D:\node;C:\Program Files\Bandizip;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林 忻怡\AppData\Local\Microsoft\WindowsApps;D:\MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Anaconda;D:\Anaconda\Scripts;D:\Anaconda\Library\bin;D:\Anaconda\Library\mingw-w64\bin;D:\Anaconda\Library\usr\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Maven\apache-maven-3.9.9\bin;C:\Users\林忻怡\AppData\Roaming\npm;D:\VScode\Microsoft VS Code\bin;D:\Git\usr\bin\vendor_perl;D:\Git\usr\bin\core_perl;.;D:\AAWorkSpace\NutriLog\app\src\testDebug\jniLibs;D:\AAWorkSpace\NutriLog\app\src\test\jniLibs -Dorg.gradle.internal.worker.tmpdir=D:\AAWorkSpace\NutriLog\app\build\tmp\testDebugUnitTest\work --add-opens=java.base/java.io=ALL-UNNAMED @C:\Users\林忻怡\.gradle\.tmp\gradle-worker-classpath16778841689061200652txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 7'
+Successfully started process 'Gradle Test Executor 7'
+错误: 找不到或无法加载主类 worker.org.gradle.process.internal.worker.GradleWorkerMain
+原因: java.lang.ClassNotFoundException: worker.org.gradle.process.internal.worker.GradleWorkerMain
+Process 'Gradle Test Executor 7' finished with non-zero exit value 1
+org.gradle.process.internal.ExecException: Process 'Gradle Test Executor 7' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:442)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.onProcessStop(DefaultWorkerProcess.java:146)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.access$000(DefaultWorkerProcess.java:43)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess$1.executionFinished(DefaultWorkerProcess.java:99)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:44)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:268)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:170)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:160)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy196.executionFinished(Unknown Source)
+	at org.gradle.process.internal.DefaultExecHandle.setEndStateInfo(DefaultExecHandle.java:221)
+	at org.gradle.process.internal.DefaultExecHandle.finished(DefaultExecHandle.java:381)
+	at org.gradle.process.internal.ExecHandleRunner.completed(ExecHandleRunner.java:134)
+	at org.gradle.process.internal.ExecHandleRunner.lambda$run$2(ExecHandleRunner.java:97)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.process.internal.ExecHandleRunner.run(ExecHandleRunner.java:95)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Starting process 'Gradle Test Executor 8'. Working directory: D:\AAWorkSpace\NutriLog\app Command: D:\JDK17\jdk-17.0.14+7\bin\java.exe -Djava.awt.headless=true -Djava.library.path=D:\JDK17\jdk-17.0.14+7\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\林忻怡\bin;D:\Git\mingw64\bin;D:\Git\usr\local\bin;D:\Git\usr\bin;D:\Git\usr\bin;D:\Git\mingw64\bin;D:\Git\usr\bin;C:\Users\林忻怡\bin;D:\JDK17\jdk-17.0.14+7\bin;D:\JDK17\jdk-17.0.14+7\jre\bin;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\;MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;D:\Maven\apache-maven-3.6.3\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;D:\node;C:\Program Files\Bandizip;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林 忻怡\AppData\Local\Microsoft\WindowsApps;D:\MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Anaconda;D:\Anaconda\Scripts;D:\Anaconda\Library\bin;D:\Anaconda\Library\mingw-w64\bin;D:\Anaconda\Library\usr\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Maven\apache-maven-3.9.9\bin;C:\Users\林忻怡\AppData\Roaming\npm;D:\VScode\Microsoft VS Code\bin;D:\Git\usr\bin\vendor_perl;D:\Git\usr\bin\core_perl;.;D:\AAWorkSpace\NutriLog\app\src\testDebug\jniLibs;D:\AAWorkSpace\NutriLog\app\src\test\jniLibs -Dorg.gradle.internal.worker.tmpdir=D:\AAWorkSpace\NutriLog\app\build\tmp\testDebugUnitTest\work --add-opens=java.base/java.io=ALL-UNNAMED @C:\Users\林忻怡\.gradle\.tmp\gradle-worker-classpath2011725652545111781txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 8'
+Successfully started process 'Gradle Test Executor 8'
+错误: 找不到或无法加载主类 worker.org.gradle.process.internal.worker.GradleWorkerMain
+原因: java.lang.ClassNotFoundException: worker.org.gradle.process.internal.worker.GradleWorkerMain
+Process 'Gradle Test Executor 8' finished with non-zero exit value 1
+org.gradle.process.internal.ExecException: Process 'Gradle Test Executor 8' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:442)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.onProcessStop(DefaultWorkerProcess.java:146)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.access$000(DefaultWorkerProcess.java:43)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess$1.executionFinished(DefaultWorkerProcess.java:99)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:44)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:268)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:170)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:160)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy196.executionFinished(Unknown Source)
+	at org.gradle.process.internal.DefaultExecHandle.setEndStateInfo(DefaultExecHandle.java:221)
+	at org.gradle.process.internal.DefaultExecHandle.finished(DefaultExecHandle.java:381)
+	at org.gradle.process.internal.ExecHandleRunner.completed(ExecHandleRunner.java:134)
+	at org.gradle.process.internal.ExecHandleRunner.lambda$run$2(ExecHandleRunner.java:97)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.process.internal.ExecHandleRunner.run(ExecHandleRunner.java:95)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Starting process 'Gradle Test Executor 9'. Working directory: D:\AAWorkSpace\NutriLog\app Command: D:\JDK17\jdk-17.0.14+7\bin\java.exe -Djava.awt.headless=true -Djava.library.path=D:\JDK17\jdk-17.0.14+7\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\林忻怡\bin;D:\Git\mingw64\bin;D:\Git\usr\local\bin;D:\Git\usr\bin;D:\Git\usr\bin;D:\Git\mingw64\bin;D:\Git\usr\bin;C:\Users\林忻怡\bin;D:\JDK17\jdk-17.0.14+7\bin;D:\JDK17\jdk-17.0.14+7\jre\bin;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\;MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;D:\Maven\apache-maven-3.6.3\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;D:\node;C:\Program Files\Bandizip;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林 忻怡\AppData\Local\Microsoft\WindowsApps;D:\MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Anaconda;D:\Anaconda\Scripts;D:\Anaconda\Library\bin;D:\Anaconda\Library\mingw-w64\bin;D:\Anaconda\Library\usr\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Maven\apache-maven-3.9.9\bin;C:\Users\林忻怡\AppData\Roaming\npm;D:\VScode\Microsoft VS Code\bin;D:\Git\usr\bin\vendor_perl;D:\Git\usr\bin\core_perl;.;D:\AAWorkSpace\NutriLog\app\src\testDebug\jniLibs;D:\AAWorkSpace\NutriLog\app\src\test\jniLibs -Dorg.gradle.internal.worker.tmpdir=D:\AAWorkSpace\NutriLog\app\build\tmp\testDebugUnitTest\work --add-opens=java.base/java.io=ALL-UNNAMED @C:\Users\林忻怡\.gradle\.tmp\gradle-worker-classpath9838587962390249605txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 9'
+Successfully started process 'Gradle Test Executor 9'
+错误: 找不到或无法加载主类 worker.org.gradle.process.internal.worker.GradleWorkerMain
+原因: java.lang.ClassNotFoundException: worker.org.gradle.process.internal.worker.GradleWorkerMain
+
+Could not write standard input to Gradle Test Executor 9.
+java.io.IOException: 管道正在被关闭。
+	at java.base/java.io.FileOutputStream.writeBytes(Native Method)
+	at java.base/java.io.FileOutputStream.write(FileOutputStream.java:349)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:81)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:142)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.writeBuffer(ExecOutputHandleRunner.java:98)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.forwardContent(ExecOutputHandleRunner.java:85)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.run(ExecOutputHandleRunner.java:64)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Could not write standard input to Gradle Test Executor 10.
+java.io.IOException: 管道正在被关闭。
+	at java.base/java.io.FileOutputStream.writeBytes(Native Method)
+	at java.base/java.io.FileOutputStream.write(FileOutputStream.java:349)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:81)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:142)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.writeBuffer(ExecOutputHandleRunner.java:98)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.forwardContent(ExecOutputHandleRunner.java:85)
+	at org.gradle.process.internal.streams.ExecOutputHandleRunner.run(ExecOutputHandleRunner.java:64)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+> Task :app:testDebugUnitTest FAILED
+Process 'Gradle Test Executor 9' finished with non-zero exit value 1
+org.gradle.process.internal.ExecException: Process 'Gradle Test Executor 9' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:442)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.onProcessStop(DefaultWorkerProcess.java:146)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.access$000(DefaultWorkerProcess.java:43)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess$1.executionFinished(DefaultWorkerProcess.java:99)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:44)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:268)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:170)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:160)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy196.executionFinished(Unknown Source)
+	at org.gradle.process.internal.DefaultExecHandle.setEndStateInfo(DefaultExecHandle.java:221)
+	at org.gradle.process.internal.DefaultExecHandle.finished(DefaultExecHandle.java:381)
+	at org.gradle.process.internal.ExecHandleRunner.completed(ExecHandleRunner.java:134)
+	at org.gradle.process.internal.ExecHandleRunner.lambda$run$2(ExecHandleRunner.java:97)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.process.internal.ExecHandleRunner.run(ExecHandleRunner.java:95)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Starting process 'Gradle Test Executor 10'. Working directory: D:\AAWorkSpace\NutriLog\app Command: D:\JDK17\jdk-17.0.14+7\bin\java.exe -Djava.awt.headless=true -Djava.library.path=D:\JDK17\jdk-17.0.14+7\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\林忻怡\bin;D:\Git\mingw64\bin;D:\Git\usr\local\bin;D:\Git\usr\bin;D:\Git\usr\bin;D:\Git\mingw64\bin;D:\Git\usr\bin;C:\Users\林忻怡\bin;D:\JDK17\jdk-17.0.14+7\bin;D:\JDK17\jdk-17.0.14+7\jre\bin;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\;MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;D:\Maven\apache-maven-3.6.3\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;D:\node;C:\Program Files\Bandizip;D:\JAVA\Java\jdk-1.8\bin;D:\JAVA\Java\jdk-1.8\jre\bin;C:\Users\林 忻怡\AppData\Local\Microsoft\WindowsApps;D:\MySQL\MySQL Server 8.0\bin;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Microsoft SQL Server\160\DTS\Binn;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Anaconda;D:\Anaconda\Scripts;D:\Anaconda\Library\bin;D:\Anaconda\Library\mingw-w64\bin;D:\Anaconda\Library\usr\bin;C:\Users\林忻怡\AppData\Local\Microsoft\WindowsApps;D:\Maven\apache-maven-3.9.9\bin;C:\Users\林忻怡\AppData\Roaming\npm;D:\VScode\Microsoft VS Code\bin;D:\Git\usr\bin\vendor_perl;D:\Git\usr\bin\core_perl;.;D:\AAWorkSpace\NutriLog\app\src\testDebug\jniLibs;D:\AAWorkSpace\NutriLog\app\src\test\jniLibs -Dorg.gradle.internal.worker.tmpdir=D:\AAWorkSpace\NutriLog\app\build\tmp\testDebugUnitTest\work --add-opens=java.base/java.io=ALL-UNNAMED @C:\Users\林忻怡\.gradle\.tmp\gradle-worker-classpath9061110132892587823txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 10'
+Successfully started process 'Gradle Test Executor 10'
+错误: 找不到或无法加载主类 worker.org.gradle.process.internal.worker.GradleWorkerMain
+原因: java.lang.ClassNotFoundException: worker.org.gradle.process.internal.worker.GradleWorkerMain
+Process 'Gradle Test Executor 10' finished with non-zero exit value 1
+org.gradle.process.internal.ExecException: Process 'Gradle Test Executor 10' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:442)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.onProcessStop(DefaultWorkerProcess.java:146)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.access$000(DefaultWorkerProcess.java:43)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess$1.executionFinished(DefaultWorkerProcess.java:99)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:44)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:268)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:170)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:160)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy196.executionFinished(Unknown Source)
+	at org.gradle.process.internal.DefaultExecHandle.setEndStateInfo(DefaultExecHandle.java:221)
+	at org.gradle.process.internal.DefaultExecHandle.finished(DefaultExecHandle.java:381)
+	at org.gradle.process.internal.ExecHandleRunner.completed(ExecHandleRunner.java:134)
+	at org.gradle.process.internal.ExecHandleRunner.lambda$run$2(ExecHandleRunner.java:97)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.process.internal.ExecHandleRunner.run(ExecHandleRunner.java:95)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+[Incubating] Problems report is available at: file:///D:/AAWorkSpace/NutriLog/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:testDebugUnitTest'.
+> Process 'Gradle Test Executor 6' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 10s
+30 actionable tasks: 4 executed, 26 up-to-date
+Watched directory hierarchies: [D:\AAWorkSpace\NutriLog]

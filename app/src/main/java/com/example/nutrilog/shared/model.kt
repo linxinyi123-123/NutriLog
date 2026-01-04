@@ -1,5 +1,6 @@
 package com.example.nutrilog.shared
 
+import com.example.nutrilog.analysis.analysis.DailyAnalysis
 import com.example.nutrilog.data.entities.FoodCategory
 import com.example.nutrilog.data.entities.MealLocation
 import com.example.nutrilog.data.entities.MealType
@@ -34,7 +35,21 @@ data class DailyAnalysis(
     val nutrition: NutritionFacts,
     val target: NutritionFacts,
     val records: List<MealRecord>
-)
+){
+    // 👇 新增伴生对象，用于存放工厂方法
+    companion object {
+        // 👇 定义 empty 函数，返回一个空的 DailyAnalysis
+        fun empty(date: String): com.example.nutrilog.analysis.analysis.DailyAnalysis {
+            return DailyAnalysis(
+                date = date,
+                nutrition = NutritionFacts(),
+                target = NutritionTargetFactory().createForAdultMale(),
+                score = HealthScore(0.0,mapOf<String, Double>(),emptyList()) ,
+                records = emptyList()
+            )
+        }
+    }
+}
 
 data class HealthScore(
     val total: Double,

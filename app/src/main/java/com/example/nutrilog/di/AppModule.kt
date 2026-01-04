@@ -5,9 +5,12 @@ import com.example.nutrilog.data.AppDatabase
 import com.example.nutrilog.data.dao.FoodDao
 import com.example.nutrilog.data.dao.MealRecordDao
 import com.example.nutrilog.data.dao.RecordFoodDao
+import com.example.nutrilog.data.dao.FoodComboDao
+import com.example.nutrilog.data.dao.ComboFoodDao
 import com.example.nutrilog.data.repository.FoodRepository
 import com.example.nutrilog.data.repository.MealRecordRepository
 import com.example.nutrilog.ui.viewmodels.MainViewModel
+import com.example.nutrilog.ui.viewmodels.AddRecordViewModel
 
 object AppModule {
     
@@ -25,9 +28,17 @@ object AppModule {
     
     fun provideRecordFoodDao(context: Context): RecordFoodDao = provideDatabase(context).recordFoodDao()
     
+    fun provideFoodComboDao(context: Context): FoodComboDao = provideDatabase(context).foodComboDao()
+    
+    fun provideComboFoodDao(context: Context): ComboFoodDao = provideDatabase(context).comboFoodDao()
+    
     // Repository实例
     fun provideFoodRepository(context: Context): FoodRepository = 
-        FoodRepository(provideFoodDao(context))
+        FoodRepository(
+            provideFoodDao(context),
+            provideFoodComboDao(context),
+            provideComboFoodDao(context)
+        )
     
     fun provideMealRecordRepository(context: Context): MealRecordRepository = 
         MealRecordRepository(provideMealRecordDao(context), provideRecordFoodDao(context))
@@ -37,6 +48,12 @@ object AppModule {
         val mealRecordRepository = provideMealRecordRepository(context)
         val foodRepository = provideFoodRepository(context)
         return MainViewModel(mealRecordRepository, foodRepository)
+    }
+    
+    fun provideAddRecordViewModel(context: Context): AddRecordViewModel {
+        val mealRecordRepository = provideMealRecordRepository(context)
+        val foodRepository = provideFoodRepository(context)
+        return AddRecordViewModel(mealRecordRepository, foodRepository)
     }
     
     // 清理资源（用于测试）

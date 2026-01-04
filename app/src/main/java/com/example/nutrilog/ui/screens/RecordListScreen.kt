@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -46,6 +47,7 @@ import com.example.nutrilog.data.entities.FoodItem
 import com.example.nutrilog.data.entities.MealLocation
 import com.example.nutrilog.data.entities.MealRecord
 import com.example.nutrilog.data.entities.MealType
+import com.example.nutrilog.data.entities.FoodTags
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 
@@ -65,6 +67,11 @@ fun RecordListScreen(
     // 删除确认对话框状态
     var showDeleteDialog by remember { mutableStateOf(false) }
     var recordToDelete by remember { mutableStateOf<MealRecord?>(null) }
+    
+    // 当屏幕进入焦点时重新加载数据
+    LaunchedEffect(Unit) {
+        viewModel.loadAllMealRecords()
+    }
     
     // 处理错误消息
     LaunchedEffect(errorMessage) {
@@ -247,8 +254,18 @@ fun MealRecordItem(
                     )
                 }
                 
-                // 操作按钮
-                Row {
+                // 操作按钮和标签
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 标签显示（在操作按钮左侧）
+                    if (record.tag.isNotEmpty() && record.tag != "未定义") {
+                        TagChip(
+                            tag = record.tag,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
+                    
                     // 编辑按钮
                     IconButton(
                         onClick = { onEditClick(record) }
@@ -275,4 +292,35 @@ fun MealRecordItem(
 
         }
     }
+}
+
+// 标签显示组件（用于记录列表）
+@Composable
+fun TagChip(
+    tag: String,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = FoodTags.TAG_COLORS[tag] ?: MaterialTheme.colorScheme.primary
+    val textColor = FoodTags.TAG_TEXT_COLORS[tag] ?: MaterialTheme.colorScheme.onPrimary
+    
+    androidx.compose.material3.AssistChip(
+        onClick = {},
+        label = { 
+            Text(
+                text = tag,
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+                modifier = Modifier.fillMaxWidth()
+            ) 
+        },
+        modifier = modifier.width(60.dp),
+        colors = androidx.compose.material3.AssistChipDefaults.assistChipColors(
+            containerColor = backgroundColor,
+            labelColor = textColor
+        ),
+        border = androidx.compose.material3.AssistChipDefaults.assistChipBorder(
+            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            borderWidth = 1.dp
+        )
+    )
 }

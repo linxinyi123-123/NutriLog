@@ -32,20 +32,27 @@ class DatabaseCallback(
     
     override fun onOpen(db: SupportSQLiteDatabase) {
         super.onOpen(db)
-        Log.d("DatabaseCallback", "数据库已打开，优化数据库设置...")
+        Log.d("DatabaseCallback", "数据库已打开，开始检查数据初始化...")
         
-        try {
-            db.execSQL("PRAGMA foreign_keys = ON;")
-            db.execSQL("PRAGMA journal_mode = WAL;")
-            db.execSQL("PRAGMA synchronous = NORMAL;")
-            
-            Log.d("DatabaseCallback", "数据库优化设置完成")
-            
-            // 验证数据库状态
-            verifyDatabaseState(db)
-            
-        } catch (e: Exception) {
-            Log.e("DatabaseCallback", "数据库优化设置失败", e)
+        // 在数据库打开时检查是否需要初始化数据
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val database = AppDatabase.getDatabase(context)
+                val foodDao = database.foodDao()
+                val foodCount = foodDao.count()
+                
+                Log.d("DatabaseCallback", "检查数据库状态: 食物记录数量 = $foodCount")
+                
+                if (foodCount == 0) {
+                    Log.d("DatabaseCallback", "数据库为空，执行初始化...")
+                    initializeDatabase(context)
+                    Log.d("DatabaseCallback", "数据库初始化完成")
+                } else {
+                    Log.d("DatabaseCallback", "数据库已有 $foodCount 条食物记录")
+                }
+            } catch (e: Exception) {
+                Log.e("DatabaseCallback", "数据库初始化检查失败", e)
+            }
         }
     }
     

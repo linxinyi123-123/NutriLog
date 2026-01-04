@@ -2,9 +2,12 @@ package com.example.nutrilog.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nutrilog.data.entities.ComboFood
 import com.example.nutrilog.data.entities.FoodCategory
 import com.example.nutrilog.data.entities.FoodItem
+import com.example.nutrilog.data.entities.FoodCombo
 import com.example.nutrilog.data.entities.MealRecord
+import com.example.nutrilog.data.entities.FoodUnit
 import com.example.nutrilog.data.repository.FoodRepository
 import com.example.nutrilog.data.repository.MealRecordRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -179,5 +182,82 @@ class MainViewModel(
     // 获取记录的食物列表（带数量）
     suspend fun getFoodsForRecord(recordId: Long): List<Pair<FoodItem, Double>> {
         return mealRecordRepository.getFoodsForRecord(recordId)
+    }
+    
+    // 保存食物组合
+    fun saveFoodCombo(name: String, description: String?, foods: List<Pair<FoodItem, Double>>) {
+        viewModelScope.launch {
+            try {
+                // 创建食物组合
+                val combo = FoodCombo(
+                    name = name,
+                    description = description ?: ""
+                )
+                
+                // 创建组合食物列表
+                val comboFoods = foods.mapIndexed { index, (food, quantity) ->
+                    ComboFood(
+                        comboId = 0, // 将在创建时设置
+                        foodId = food.id,
+                        foodName = food.name,
+                        portion = quantity,
+                        unit = "g"
+                    )
+                }
+                
+                // 保存组合到数据库
+                foodRepository.createFoodCombo(combo, comboFoods)
+                
+                // 可以在这里添加成功提示或状态更新
+            } catch (e: Exception) {
+                _errorMessage.value = "保存组合失败: ${e.message}"
+            }
+        }
+    }
+    
+    // 获取所有食物组合
+    private val _foodCombos = MutableStateFlow<List<FoodCombo>>(emptyList())
+    val foodCombos: StateFlow<List<FoodCombo>> = _foodCombos.asStateFlow()
+    
+    // 加载所有食物组合
+    fun loadFoodCombos() {
+        viewModelScope.launch {
+            try {
+                foodRepository.getAllFoodCombos().collect { combos ->
+                    _foodCombos.value = combos
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "加载组合失败: ${e.message}"
+            }
+        }
+    }
+    
+    // 根据组合ID获取组合及其食物
+    suspend fun getComboWithFoods(comboId: Long): List<Pair<FoodItem, Double>> {
+        val comboFoods = foodRepository.getFoodsByComboId(comboId)
+        return comboFoods.map { comboFood ->
+            val foodItem = FoodItem(
+                id = comboFood.foodId,
+                name = comboFood.foodName,
+                category = FoodCategory.OTHERS,
+                calories = 0.0,
+                protein = 0.0,
+                carbs = 0.0,
+                fat = 0.0
+            )
+            foodItem to comboFood.portion
+        }
+    }
+    
+    // 使用组合（将组合中的食物添加到当前选择）
+    fun useFoodCombo(comboId: Long, onComboUsed: (List<Pair<FoodItem, Double>>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val foodsWithQuantities = getComboWithFoods(comboId)
+                onComboUsed(foodsWithQuantities)
+            } catch (e: Exception) {
+                _errorMessage.value = "使用组合失败: ${e.message}"
+            }
+        }
     }
 }

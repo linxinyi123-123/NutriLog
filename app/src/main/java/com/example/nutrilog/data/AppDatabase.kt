@@ -57,7 +57,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "nutrilog_database"
+                    "Nutrilog_database"
                 ).addCallback(DatabaseCallback(context))
                  .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                  .fallbackToDestructiveMigration()
@@ -132,7 +132,7 @@ abstract class AppDatabase : RoomDatabase() {
                 // 为meal_records表添加热量字段
                 addColumnIfNotExists(database, "meal_records", "calories", "REAL NOT NULL DEFAULT 0.0")
             }
-            
+
             private fun addColumnIfNotExists(database: SupportSQLiteDatabase, tableName: String, columnName: String, columnType: String) {
                 try {
                     // 尝试查询该列，如果列不存在会抛出异常

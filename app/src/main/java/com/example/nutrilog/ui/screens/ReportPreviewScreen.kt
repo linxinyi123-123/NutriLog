@@ -15,16 +15,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.nutrilog.ui.models.GeneratedReport
+import com.example.nutrilog.ui.models.ContentOptions
+import com.example.nutrilog.ui.models.StyleOptions
+import com.example.nutrilog.ui.models.ReportType
 import com.example.nutrilog.ui.models.ShareFormat
 import com.example.nutrilog.ui.viewmodels.ReportPreviewViewModel
 
@@ -136,27 +142,17 @@ private fun ReportContentView(
         // 报告封面
         ReportCover(report)
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
         // 报告摘要
         ReportSummary(report)
-        
-        Spacer(modifier = Modifier.height(16.dp))
         
         // 营养分析
         ReportNutritionAnalysis(report)
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
         // 趋势分析
         ReportTrendAnalysis(report)
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
         // 改进建议
         ReportRecommendations(report)
-        
-        Spacer(modifier = Modifier.height(16.dp))
         
         // 报告结尾
         ReportFooter(report)
@@ -169,28 +165,38 @@ private fun ReportCover(report: com.example.nutrilog.ui.models.GeneratedReport) 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(280.dp)
+            .height(260.dp)
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primary,
                         MaterialTheme.colorScheme.primaryContainer
-                    )
+                    ),
+                    start = Offset(0f, 0f),
+                    end = Offset(0f, 260f)
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(16.dp)
         ) {
             // 应用图标
-            Icon(
-                Icons.Default.Restaurant,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = Color.White
-            )
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    Icons.Default.Restaurant,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    tint = Color.White
+                )
+            }
             
             Spacer(modifier = Modifier.height(16.dp))
             
@@ -200,9 +206,10 @@ private fun ReportCover(report: com.example.nutrilog.ui.models.GeneratedReport) 
                 style = TextStyle(
                     fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp,
+                    fontSize = 36.sp,
                     color = Color.White
-                )
+                ),
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -216,40 +223,43 @@ private fun ReportCover(report: com.example.nutrilog.ui.models.GeneratedReport) 
                 )
             )
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             
             // 平均评分
             Box(
                 modifier = Modifier
-                    .size(106.dp) // 包含边框的总大小
+                    .size(100.dp)
+                    .shadow(4.dp, CircleShape)
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White,
+                                Color.White.copy(alpha = 0.9f)
+                            )
+                        )
+                    )
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(3.dp) // 边框宽度
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = report.averageScore.toInt().toString(),
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 36.sp,
-                                color = Color.White
-                            )
+                    Text(
+                        text = report.averageScore.toInt().toString(),
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 26.sp,
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        Text(
-                            text = "平均分",
-                            style = TextStyle(
-                                fontSize = 14.sp,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
+                    )
+                    Text(
+                        text = "平均分",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
-                    }
+                    )
                 }
             }
             
@@ -272,24 +282,34 @@ private fun ReportCover(report: com.example.nutrilog.ui.models.GeneratedReport) 
 private fun ReportSummary(report: com.example.nutrilog.ui.models.GeneratedReport) {
     SectionCard(title = "报告摘要") {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "这是一份${report.type.name}营养报告，包含了${report.startDate}至${report.endDate}期间的营养摄入分析。")
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "报告包含以下内容:")
+            Text(
+                text = "这是一份${report.type.name}营养报告，包含了${report.startDate}至${report.endDate}期间的营养摄入分析。",
+                style = MaterialTheme.typography.bodyLarge,
+                lineHeight = 24.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            Text(
+                text = "报告包含以下内容:",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
             val contentOptions = report.contentOptions
-            if (contentOptions.includeNutritionSummary) {
-                BulletPoint(text = "营养摄入摘要")
-            }
-            if (contentOptions.includeTrendAnalysis) {
-                BulletPoint(text = "营养趋势分析")
-            }
-            if (contentOptions.includeMealPatterns) {
-                BulletPoint(text = "饮食模式分析")
-            }
-            if (contentOptions.includeRecommendations) {
-                BulletPoint(text = "改进建议")
-            }
-            if (contentOptions.includeHealthScore) {
-                BulletPoint(text = "健康评分")
+            val contentItems = listOfNotNull(
+                contentOptions.includeNutritionSummary to "营养摄入摘要",
+                contentOptions.includeTrendAnalysis to "营养趋势分析",
+                contentOptions.includeMealPatterns to "饮食模式分析",
+                contentOptions.includeRecommendations to "改进建议",
+                contentOptions.includeHealthScore to "健康评分"
+            ).filter { it.first }.map { it.second }
+            
+            contentItems.forEachIndexed { index, item ->
+                BulletPoint(text = item)
+                if (index < contentItems.size - 1) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
             }
         }
     }
@@ -322,10 +342,49 @@ private fun ReportTrendAnalysis(report: com.example.nutrilog.ui.models.Generated
 private fun ReportRecommendations(report: com.example.nutrilog.ui.models.GeneratedReport) {
     SectionCard(title = "改进建议") {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "1. 增加膳食纤维的摄入")
-            Text(text = "2. 控制脂肪摄入量")
-            Text(text = "3. 保持规律的饮食习惯")
-            Text(text = "4. 增加蛋白质的摄入")
+            val recommendations = listOf(
+                "增加膳食纤维的摄入",
+                "控制脂肪摄入量",
+                "保持规律的饮食习惯",
+                "增加蛋白质的摄入"
+            )
+            
+            recommendations.forEachIndexed { index, recommendation ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.Top) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                .clip(CircleShape)
+                                .align(Alignment.Top)
+                                .padding(4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (index + 1).toString(),
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(12.dp))
+                        
+                        Text(
+                            text = recommendation,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -336,13 +395,17 @@ private fun ReportFooter(report: com.example.nutrilog.ui.models.GeneratedReport)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(16.dp),
+            .padding(vertical = 32.dp, horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "© 2026 NutriLog",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "专注于您的营养健康",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -396,15 +459,23 @@ private fun SectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp,
+            hoveredElevation = 2.dp,
+            focusedElevation = 2.dp
+        )
     ) {
         Column {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(16.dp)
             )
+            Divider(modifier = Modifier.fillMaxWidth(), thickness = 0.5.dp)
             content()
         }
     }
@@ -516,4 +587,222 @@ private fun getFormatIcon(format: ShareFormat) = when (format) {
     ShareFormat.PDF -> Icons.Filled.PictureAsPdf
     ShareFormat.IMAGE -> Icons.Filled.Image
     ShareFormat.TEXT -> Icons.Filled.Description
+}
+
+// 模拟报告数据
+private fun mockReport() = GeneratedReport(
+    id = "1",
+    type = ReportType.WEEKLY,
+    startDate = java.time.LocalDate.of(2026, 1, 1),
+    endDate = java.time.LocalDate.of(2026, 1, 7),
+    contentOptions = ContentOptions(
+        includeNutritionSummary = true,
+        includeTrendAnalysis = true,
+        includeMealPatterns = true,
+        includeRecommendations = true,
+        includeHealthScore = true
+    ),
+    styleOptions = StyleOptions()
+)
+
+// 预览整个报告预览屏幕
+@Preview(
+    showBackground = true,
+    device = "id:pixel_5",
+    name = "Report Preview Screen"
+)
+@Composable
+private fun ReportPreviewScreenPreview() {
+    MaterialTheme {
+        ReportContentPreview()
+    }
+}
+
+// 报告内容预览，不依赖ViewModel和NavController
+@Composable
+private fun ReportContentPreview() {
+    val report = mockReport()
+    
+    Scaffold(
+        topBar = {
+            ReportPreviewTopBar(
+                report = report,
+                onShare = {},
+                onExport = {},
+                onBack = {}
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {},
+                icon = { Icon(Icons.Filled.Save, "保存") },
+                text = { Text("保存报告") }
+            )
+        }
+    ) {
+        ReportContentView(
+            report = report,
+            modifier = Modifier.padding(it)
+        )
+    }
+}
+
+// 预览报告封面
+@Preview(
+    showBackground = true,
+    name = "Report Cover"
+)
+@Composable
+private fun ReportCoverPreview() {
+    MaterialTheme {
+        ReportCover(report = mockReport())
+    }
+}
+
+// 预览报告摘要
+@Preview(
+    showBackground = true,
+    name = "Report Summary"
+)
+@Composable
+private fun ReportSummaryPreview() {
+    MaterialTheme {
+        ReportSummary(report = mockReport())
+    }
+}
+
+// 预览营养分析
+@Preview(
+    showBackground = true,
+    name = "Report Nutrition Analysis"
+)
+@Composable
+private fun ReportNutritionAnalysisPreview() {
+    MaterialTheme {
+        ReportNutritionAnalysis(report = mockReport())
+    }
+}
+
+// 预览趋势分析
+@Preview(
+    showBackground = true,
+    name = "Report Trend Analysis"
+)
+@Composable
+private fun ReportTrendAnalysisPreview() {
+    MaterialTheme {
+        ReportTrendAnalysis(report = mockReport())
+    }
+}
+
+// 预览改进建议
+@Preview(
+    showBackground = true,
+    name = "Report Recommendations"
+)
+@Composable
+private fun ReportRecommendationsPreview() {
+    MaterialTheme {
+        ReportRecommendations(report = mockReport())
+    }
+}
+
+// 预览报告结尾
+@Preview(
+    showBackground = true,
+    name = "Report Footer"
+)
+@Composable
+private fun ReportFooterPreview() {
+    MaterialTheme {
+        ReportFooter(report = mockReport())
+    }
+}
+
+// 预览章节卡片
+@Preview(
+    showBackground = true,
+    name = "Section Card"
+)
+@Composable
+private fun SectionCardPreview() {
+    MaterialTheme {
+        SectionCard(title = "预览章节") {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "这是一个章节卡片的预览内容。")
+                Text(text = "您可以在这里看到卡片的样式和布局。")
+            }
+        }
+    }
+}
+
+// 预览项目符号
+@Preview(
+    showBackground = true,
+    name = "Bullet Point"
+)
+@Composable
+private fun BulletPointPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            BulletPoint(text = "项目符号1")
+            BulletPoint(text = "项目符号2")
+            BulletPoint(text = "项目符号3")
+        }
+    }
+}
+
+// 预览分享对话框
+@Preview(
+    showBackground = true,
+    name = "Share Dialog"
+)
+@Composable
+private fun ShareReportDialogPreview() {
+    MaterialTheme {
+        ShareReportDialog(
+            isVisible = true,
+            onDismiss = {},
+            onShare = {}
+        )
+    }
+}
+
+// 预览加载视图
+@Preview(
+    showBackground = true,
+    name = "Loading View"
+)
+@Composable
+private fun ReportLoadingViewPreview() {
+    MaterialTheme {
+        ReportLoadingView()
+    }
+}
+
+// 预览错误视图
+@Preview(
+    showBackground = true,
+    name = "Error View"
+)
+@Composable
+private fun ReportErrorViewPreview() {
+    MaterialTheme {
+        ReportErrorView(
+            message = "加载失败，请重试。",
+            onRetry = {}
+        )
+    }
+}
+
+// 预览空视图
+@Preview(
+    showBackground = true,
+    name = "Empty View"
+)
+@Composable
+private fun ReportEmptyViewPreview() {
+    MaterialTheme {
+        ReportEmptyView()
+    }
 }

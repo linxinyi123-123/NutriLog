@@ -11,6 +11,8 @@ import com.example.nutrilog.data.repository.FoodRepository
 import com.example.nutrilog.data.repository.MealRecordRepository
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 import com.example.nutrilog.ui.viewmodels.AddRecordViewModel
+import com.example.nutrilog.ui.viewmodels.ReportViewModel
+import com.example.nutrilog.ui.viewmodels.ReportPreviewViewModel
 
 object AppModule {
     
@@ -54,6 +56,14 @@ object AppModule {
         val mealRecordRepository = provideMealRecordRepository(context)
         val foodRepository = provideFoodRepository(context)
         return AddRecordViewModel(mealRecordRepository, foodRepository)
+    }
+    
+    fun provideReportViewModel(): ReportViewModel {
+        return ReportViewModel()
+    }
+    
+    fun provideReportPreviewViewModel(): ReportPreviewViewModel {
+        return ReportPreviewViewModel()
     }
     
     // 清理资源（用于测试）

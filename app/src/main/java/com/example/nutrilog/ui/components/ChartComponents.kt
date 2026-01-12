@@ -5,28 +5,30 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.coroutines.delay
 import com.example.nutrilog.data.entities.MealRecord
 import com.example.nutrilog.shared.NutritionFacts
 import com.example.nutrilog.shared.TrendAnalysis
 import com.example.nutrilog.ui.theme.AppColors
 import com.example.nutrilog.ui.theme.AppShapes
 import com.example.nutrilog.ui.theme.AppTypography
+import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
@@ -492,6 +494,84 @@ fun DrawScope.drawGrid() {
     }
 }
 
+// 预处理数据点，减少绘制时的计算
+data class ProcessedPoint(
+    val x: Float,
+    val y: Float,
+    val originalPoint: LineDataPoint
+)
+
+// 预处理数据，减少绘制时的计算
+fun processDataForRendering(dataPoints: List<LineDataPoint>, width: Float, height: Float): List<ProcessedPoint> {
+    if (dataPoints.isEmpty()) return emptyList()
+    
+    val maxValue = dataPoints.maxOf { it.value }
+    val minValue = dataPoints.minOf { it.value }
+    val valueRange = if (maxValue > minValue) maxValue - minValue else 1f
+    
+    return dataPoints.mapIndexed { index, point ->
+        val x = (index.toFloat() / (dataPoints.size - 1)) * width
+        val y = height - ((point.value - minValue) / valueRange) * height
+        ProcessedPoint(x, y, point)
+    }
+}
+
+// 采样数据，减少绘制点数
+fun <T> List<T>.sampleEveryN(n: Int): List<T> {
+    if (isEmpty()) return this
+    return this.filterIndexed { index, _ -> index % n == 0 }
+}
+
+// 绘制折线
+fun DrawScope.drawOptimizedLine(
+    processedPoints: List<ProcessedPoint>,
+    lineColor: Color,
+    fillColor: Color
+) {
+    if (processedPoints.isEmpty()) return
+    
+    // 绘制填充区域
+    val path = Path().apply {
+        moveTo(processedPoints.first().x, size.height)
+        for (point in processedPoints) {
+            lineTo(point.x, point.y)
+        }
+        lineTo(processedPoints.last().x, size.height)
+        close()
+    }
+    drawPath(path, fillColor)
+    
+    // 绘制折线
+    drawPath(
+        path = Path().apply {
+            moveTo(processedPoints.first().x, processedPoints.first().y)
+            for (point in processedPoints.drop(1)) {
+                lineTo(point.x, point.y)
+            }
+        },
+        color = lineColor,
+        style = Stroke(width = 2f)
+    )
+}
+
+// 绘制数据点
+fun DrawScope.drawOptimizedDataPoints(processedPoints: List<ProcessedPoint>, color: Color) {
+    if (processedPoints.isEmpty()) return
+    
+    for (point in processedPoints) {
+        drawCircle(
+            color = color,
+            center = Offset(point.x, point.y),
+            radius = 4f
+        )
+        drawCircle(
+            color = AppColors.Surface,
+            center = Offset(point.x, point.y),
+            radius = 2f
+        )
+    }
+}
+
 // 绘制折线
 fun DrawScope.drawLine(
     dataPoints: List<LineDataPoint>,
@@ -560,9 +640,9 @@ fun DrawScope.drawDataPoints(dataPoints: List<LineDataPoint>, color: Color) {
     }
 }
 
-// 简易折线图实现
+// 优化的折线图组件
 @Composable
-fun SimpleLineChart(
+fun OptimizedLineChart(
     dataPoints: List<LineDataPoint>,
     lineColor: Color,
     fillColor: Color,
@@ -576,6 +656,24 @@ fun SimpleLineChart(
         val padding = 32.dp
         val chartHeight = maxHeight - padding * 2
         val chartWidth = maxWidth - padding * 2
+        
+        // 使用remember缓存处理后的数据
+        val processedData = with(LocalDensity.current) {
+            remember(dataPoints, chartWidth, chartHeight) {
+                val widthPx = chartWidth.toPx()
+                val heightPx = chartHeight.toPx()
+                processDataForRendering(dataPoints, widthPx, heightPx)
+            }
+        }
+        
+        // 使用derivedStateOf减少重组，根据数据量动态采样
+        val visibleData = remember(processedData) {
+            if (processedData.size > 100) {
+                processedData.sampleEveryN(2) // 大数据量时采样显示
+            } else {
+                processedData
+            }
+        }
         
         Canvas(
             modifier = Modifier
@@ -594,16 +692,16 @@ fun SimpleLineChart(
                 drawGrid()
             }
             
-            // 绘制折线
-            drawLine(
-                dataPoints = dataPoints,
+            // 使用优化的绘制函数
+            drawOptimizedLine(
+                processedPoints = visibleData,
                 lineColor = lineColor,
                 fillColor = fillColor
             )
             
             // 绘制数据点
             if (showPoints) {
-                drawDataPoints(dataPoints, lineColor)
+                drawOptimizedDataPoints(visibleData, lineColor)
             }
         }
         
@@ -617,7 +715,27 @@ fun SimpleLineChart(
     }
 }
 
-// 折线图组件
+// 简易折线图实现 - 保持兼容
+@Composable
+fun SimpleLineChart(
+    dataPoints: List<LineDataPoint>,
+    lineColor: Color,
+    fillColor: Color,
+    showPoints: Boolean,
+    showGrid: Boolean,
+    onClick: (LineDataPoint) -> Unit
+) {
+    OptimizedLineChart(
+        dataPoints = dataPoints,
+        lineColor = lineColor,
+        fillColor = fillColor,
+        showPoints = showPoints,
+        showGrid = showGrid,
+        onClick = onClick
+    )
+}
+
+// 折线图组件 - 保持兼容
 @Composable
 fun LineChart(
     dataPoints: List<LineDataPoint>,
@@ -627,50 +745,14 @@ fun LineChart(
     showGrid: Boolean,
     onClick: (LineDataPoint) -> Unit
 ) {
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        val padding = 32.dp
-        val chartHeight = maxHeight - padding * 2
-        val chartWidth = maxWidth - padding * 2
-        
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        val x = (offset.x - padding.toPx()) / chartWidth.toPx()
-                        val index = (x * (dataPoints.size - 1)).toInt().coerceIn(0, dataPoints.size - 1)
-                        onClick(dataPoints[index])
-                    }
-                }
-        ) {
-            // 绘制网格
-            if (showGrid) {
-                drawGrid()
-            }
-            
-            // 绘制折线
-            drawLine(
-                dataPoints = dataPoints,
-                lineColor = lineColor,
-                fillColor = fillColor
-            )
-            
-            // 绘制数据点
-            if (showPoints) {
-                drawDataPoints(dataPoints, lineColor)
-            }
-        }
-        
-        // Y轴标签
-        YAxisLabels(
-            maxValue = dataPoints.maxOf { it.value },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .height(chartHeight)
-        )
-    }
+    OptimizedLineChart(
+        dataPoints = dataPoints,
+        lineColor = lineColor,
+        fillColor = fillColor,
+        showPoints = showPoints,
+        showGrid = showGrid,
+        onClick = onClick
+    )
 }
 
 // 健康评分趋势折线图
@@ -925,6 +1007,82 @@ fun findSliceIndex(angle: Float, slices: List<PieSlice>): Int {
         currentAngle += sweepAngle
     }
     return -1
+}
+
+// 图片懒加载组件
+@Composable
+fun LazyImage(
+    url: String,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    placeholder: @Composable () -> Unit = {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.LightGray.copy(alpha = 0.1f))
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.Center)
+            )
+        }
+    }
+) {
+    var isLoading by remember { mutableStateOf(true) }
+    var hasError by remember { mutableStateOf(false) }
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    
+    LaunchedEffect(url) {
+        isLoading = true
+        hasError = false
+        
+        try {
+            // 这里使用模拟数据，实际项目中应该使用真实的图片加载逻辑
+            // 例如使用Coil、Glide等库，或者使用Android的BitmapFactory
+            // 由于是模拟，我们延迟一下模拟网络请求
+            delay(500)
+            
+            // 模拟成功加载
+            imageBitmap = null // 实际项目中这里应该是真实的ImageBitmap
+        } catch (e: Exception) {
+            hasError = true
+        } finally {
+            isLoading = false
+        }
+    }
+    
+    Box(modifier = modifier) {
+        when {
+            isLoading -> placeholder()
+            hasError -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.LightGray.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.BrokenImage,
+                        contentDescription = "加载失败",
+                        tint = Color.Gray
+                    )
+                }
+            }
+            imageBitmap != null -> {
+                androidx.compose.foundation.Image(
+                    bitmap = imageBitmap!!,
+                    contentDescription = contentDescription,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            }
+            else -> {
+                // 加载完成但没有图片，显示占位符
+                placeholder()
+            }
+        }
+    }
 }
 
 // 动画饼图组件

@@ -176,7 +176,10 @@ fun NutriLogApp() {
             
             // 报告生成页面
             composable("report_generation") {
-                ReportGenerationScreen(navController)
+                ReportGenerationScreen(
+                    navController = navController,
+                    viewModel = AppModule.provideReportViewModel()
+                )
             }
             
             // 报告预览页面

@@ -1,11 +1,12 @@
 package com.example.nutrilog.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.nutrilog.ui.components.ThemeSwitcher
@@ -16,61 +17,117 @@ fun ProfileScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("设置") }
+                title = { Text("个人资料") }
             )
         }
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
+                .padding(16.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(16.dp)
+            // 用户信息卡片
+            UserInfoCard()
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // 设置选项
+            SettingsCard()
+        }
+    }
+}
+
+@Composable
+private fun UserInfoCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 头像
+            Surface(
+                modifier = Modifier.size(80.dp),
+                color = MaterialTheme.colorScheme.primary,
+                shape = CircleShape
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                SettingsSection()
+                Box(
+                    modifier = Modifier.padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "用户",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 用户名
+            Text(
+                text = "用户",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // 用户邮箱
+            Text(
+                text = "user@example.com",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
 @Composable
-private fun SettingsSection() {
-    Column(
-        modifier = Modifier.fillMaxWidth()
+private fun SettingsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.large
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                SettingItem(
-                    title = "深色模式",
-                    trailingContent = { ThemeSwitcher() }
+        Column(modifier = Modifier.padding(16.dp)) {
+            // 深色模式开关
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "深色模式",
+                    style = MaterialTheme.typography.bodyLarge
                 )
+                
+                ThemeSwitcher()
             }
         }
     }
 }
 
+// ProfileScreen 预览
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(
+    showBackground = true,
+    device = "id:pixel_5",
+    name = "Profile Screen Preview"
+)
 @Composable
-private fun SettingItem(
-    title: String,
-    trailingContent: @Composable () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        trailingContent()
+private fun ProfileScreenPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.fillMaxSize()) {
+            UserInfoCard()
+            Spacer(modifier = Modifier.height(20.dp))
+            SettingsCard()
+        }
     }
 }

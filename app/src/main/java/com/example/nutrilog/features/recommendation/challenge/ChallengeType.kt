@@ -10,5 +10,10 @@ enum class ChallengeType {
     HABIT,          // 习惯挑战（如定时吃饭）
     VARIETY,        // 多样性挑战（如尝试新食物）
     REGULARITY,     // 规律性挑战（如按时三餐）
-    EXPLORATION     // 探索挑战（如尝试新餐厅）
+    EXPLORATION  ,   // 探索挑战（如尝试新餐厅）
+    FOOD_VARIETY,
+    MEAL_RECORD,
+    HYDRATION,
+    STREAK
+
 }

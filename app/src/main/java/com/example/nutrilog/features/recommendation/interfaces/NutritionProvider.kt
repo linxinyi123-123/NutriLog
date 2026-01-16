@@ -6,5 +6,6 @@ package com.example.nutrilog.features.recommendation.interfaces
  */
 interface NutritionProvider {
     suspend fun getNutritionalGaps(userId: Long, days: Int): List<NutritionalGap>
-    suspend fun getNutrientAverage(userId: Long, nutrient: String, days: Int): Double
+    suspend fun getEatingPatterns(userId: Long): EatingPatternAnalysis
+    suspend fun getLatestHealthScore(userId: Long): Int
 }

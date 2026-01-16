@@ -90,7 +90,7 @@ fun NutriLogApp() {
                 modifier = Modifier.padding(innerPadding)
             ) {
             composable("home") {
-                HomeScreen(navController)
+                HomeScreen(navController, context)
             }
             composable("analysis") {
                 AnalysisScreen(navController, context)

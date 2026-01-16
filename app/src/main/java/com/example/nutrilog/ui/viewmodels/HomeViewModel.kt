@@ -1,12 +1,17 @@
 package com.example.nutrilog.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.nutrilog.data.entities.MealRecord
-import com.example.nutrilog.data.entities.MealType
-import com.example.nutrilog.data.entities.MealLocation
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.nutrilog.data.repository.MealRecordRepository
+import com.example.nutrilog.data.repository.FoodRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 // 创建用于UI显示的简化模型
 data class User(
@@ -41,8 +46,11 @@ data class Meal(
     val imageUrl: String?
 )
 
-class HomeViewModel : ViewModel() {
-    // 模拟用户数据
+class HomeViewModel(
+    private val mealRecordRepository: MealRecordRepository,
+    private val foodRepository: FoodRepository
+) : ViewModel() {
+    // 模拟用户数据（暂时保留，后续可从数据库获取）
     val user = User(
         id = "1",
         name = "张三",
@@ -50,7 +58,7 @@ class HomeViewModel : ViewModel() {
         todayScore = 85
     )
 
-    // 模拟今日摘要数据
+    // 模拟今日摘要数据（暂时保留，后续可从数据库获取）
     val todaySummary = TodaySummary(
         calories = 1850,
         protein = 85.5,
@@ -60,7 +68,7 @@ class HomeViewModel : ViewModel() {
         mealsCount = 3
     )
 
-    // 模拟健康趋势数据
+    // 模拟健康趋势数据（暂时保留，后续可从数据库获取）
     val weeklyTrend = HealthTrend(
         days = listOf("周一", "周二", "周三", "周四", "周五", "周六", "周日"),
         calories = listOf(1900, 1850, 1780, 1950, 1820, 2000, 1850),
@@ -69,28 +77,51 @@ class HomeViewModel : ViewModel() {
         fat = listOf(60.0, 58.0, 55.0, 62.0, 57.0, 65.0, 58.0)
     )
 
-    // 模拟最近饮食记录
-    val recentMeals = listOf(
-        Meal(
-            id = "1",
-            name = "早餐 - 燕麦粥",
-            calories = 350,
-            time = "08:30",
-            imageUrl = null
-        ),
-        Meal(
-            id = "2",
-            name = "午餐 - 鸡胸肉沙拉",
-            calories = 450,
-            time = "12:30",
-            imageUrl = null
-        ),
-        Meal(
-            id = "3",
-            name = "下午 - 苹果",
-            calories = 95,
-            time = "15:30",
-            imageUrl = null
-        )
-    )
+    // 使用Flow来观察最近饮食记录
+    private val _recentMeals = MutableStateFlow<List<Meal>>(emptyList())
+    val recentMeals: StateFlow<List<Meal>> = _recentMeals.asStateFlow()
+
+    init {
+        // 加载最近饮食记录
+        loadRecentMeals()
+    }
+
+    // 从数据库加载最近饮食记录
+    private fun loadRecentMeals() {
+        viewModelScope.launch {
+            try {
+                val records = mealRecordRepository.getRecentMealRecords(limit = 3)
+                _recentMeals.value = records.map { record ->
+                    // 从数据库获取该记录的食物列表
+                    val foodsWithAmount = mealRecordRepository.getFoodsForRecord(record.id)
+                    
+                    // 计算总卡路里
+                    val totalCalories = if (foodsWithAmount.isNotEmpty()) {
+                        foodsWithAmount.sumOf { (food, amount) ->
+                            // 计算单个食物的卡路里：(每100克卡路里 * 克数) / 100
+                            (food.calories * amount) / 100
+                        }.toInt()
+                    } else {
+                        0
+                    }
+                    
+                    Meal(
+                        id = record.id.toString(),
+                        name = "${record.mealType.displayName} - ${record.location.displayName}",
+                        calories = totalCalories,
+                        time = record.time,
+                        imageUrl = null
+                    )
+                }
+            } catch (e: Exception) {
+                // 发生错误时，使用空列表
+                _recentMeals.value = emptyList()
+            }
+        }
+    }
+
+    // 刷新最近饮食记录
+    fun refreshRecentMeals() {
+        loadRecentMeals()
+    }
 }

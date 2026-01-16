@@ -19,6 +19,11 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.CheckCircle
+import com.example.nutrilog.ui.components.ChartContainer
+import com.example.nutrilog.ui.components.LineDataPoint
+import com.example.nutrilog.ui.components.MealTimeHeatmap
+import com.example.nutrilog.ui.components.CategoryBarChart
+import com.example.nutrilog.ui.components.LineChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -189,12 +194,12 @@ fun AnalysisScreen(navController: NavController, context: android.content.Contex
     val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
     val viewModel = remember { AnalysisViewModel(analysisService) }
     val datePickerState = rememberDatePickerState()
-    
+
     Scaffold(
         topBar = {
             AnalysisTopBar(
                 selectedDate = viewModel.getTodayDate(),
-                onDateChange = { date -> 
+                onDateChange = { date ->
                     viewModel.viewModelScope.launch {
                         viewModel.getAnalysisForDate(date).collect { analysisState ->
                             // 直接使用collectAsState监听状态变化，不访问私有属性
@@ -512,86 +517,76 @@ fun AnalysisDetailView(analysis: DailyAnalysis, viewModel: AnalysisViewModel) {
     val scrollState = rememberScrollState()
     // 模拟获取推荐数据
     val recommendations = getMockRecommendations()
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(16.dp)
+
+    // 使用LazyColumn替代嵌套的Column，避免深度嵌套
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // 1. 健康评分概览
-        HealthScoreOverview(score = analysis.score)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+        item {
+            HealthScoreOverview(score = analysis.score)
+        }
+
         // 2. 营养环形图
-        com.example.nutrilog.ui.components.NutritionPieChart(nutrition = analysis.nutrition)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+        item {
+            com.example.nutrilog.ui.components.NutritionPieChart(nutrition = analysis.nutrition)
+        }
+
         // 3. 营养素达成雷达图
-        com.example.nutrilog.ui.components.NutrientRadarChart(
-            actual = analysis.nutrition,
-            target = analysis.target
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+        item {
+            com.example.nutrilog.ui.components.NutrientRadarChart(
+                actual = analysis.nutrition,
+                target = analysis.target
+            )
+        }
+
         // 4. 周趋势分析卡片
-        TrendAnalysisCard(viewModel = viewModel)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+        item {
+            TrendAnalysisCard(viewModel = viewModel)
+        }
+
         // 5. 饮食规律性分析卡片
-        RegularityAnalysisCard()
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+        item {
+            RegularityAnalysisCard()
+        }
+
         // 6. 饮食多样性分析卡片
-        VarietyAnalysisCard()
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // 7. 食物类别分布柱状图
-        val mockCategoryData = mapOf(
-            "谷薯类" to 30.0,
-            "蔬菜类" to 25.0,
-            "水果类" to 15.0,
-            "蛋白质类" to 20.0,
-            "奶制品" to 5.0,
-            "油脂类" to 5.0
-        )
-        com.example.nutrilog.ui.components.CategoryBarChart(varietyData = mockCategoryData)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // 8. 改进建议
-        ImprovementSuggestions(suggestions = analysis.score.feedback)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // 9. 个性化推荐
-        RecommendationsSection(
-            recommendations = recommendations,
-            onRecommendationClick = { recommendation ->
-                // 推荐点击处理逻辑
-                println("Recommendation clicked: ${recommendation.title}")
+        item {
+            VarietyAnalysisCard()
+        }
+
+        // 7. 改进建议
+        item {
+            ImprovementSuggestions(suggestions = analysis.score.feedback)
+        }
+
+        // 8. 个性化推荐
+        item {
+            RecommendationsSection(
+                recommendations = recommendations,
+                onRecommendationClick = { recommendation ->
+                    // 推荐点击处理逻辑
+                    println("Recommendation clicked: ${recommendation.title}")
+                }
+            )
+        }
+
+        // 9. 改善计划
+        item {
+            Column {
+                Text(
+                    text = "改善计划",
+                    style = AppTypography.h2,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                ImprovementPlanView(plan = getMockImprovementPlan())
             }
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // 10. 改善计划
-        Text(
-            text = "改善计划",
-            style = AppTypography.h2,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        ImprovementPlanView(plan = getMockImprovementPlan())
+        }
     }
 }
 
-// 周趋势分析卡片
 @Composable
 fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
     Card(
@@ -605,15 +600,35 @@ fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
                 style = AppTypography.h2,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             val trendState = viewModel.weeklyTrendState.collectAsState().value
             when (trendState) {
                 is AnalysisState.Loading -> {
                     LoadingView(message = "正在加载趋势分析...")
                 }
                 is AnalysisState.Success -> {
-                    // 这里可以添加周趋势图表展示
-                    PlaceholderView("周趋势图表")
+                    // 使用模拟数据创建周趋势折线图
+                    val mockTrendData = listOf(
+                        LineDataPoint("周一", 85f),
+                        LineDataPoint("周二", 82f),
+                        LineDataPoint("周三", 88f),
+                        LineDataPoint("周四", 84f),
+                        LineDataPoint("周五", 89f),
+                        LineDataPoint("周六", 87f),
+                        LineDataPoint("周日", 90f)
+                    )
+
+                    // 直接显示图表，不使用嵌套的ChartContainer
+                    LineChart(
+                        dataPoints = mockTrendData,
+                        lineColor = AppColors.Primary,
+                        fillColor = AppColors.Primary.copy(alpha = 0.1f),
+                        showPoints = true,
+                        showGrid = true,
+                        onClick = { point ->
+                            // 点击事件处理
+                        }
+                    )
                 }
                 is AnalysisState.Error -> {
                     ErrorView(
@@ -632,7 +647,6 @@ fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
         }
     }
 }
-
 // 饮食规律性分析卡片
 @Composable
 fun RegularityAnalysisCard() {
@@ -647,14 +661,44 @@ fun RegularityAnalysisCard() {
                 style = AppTypography.h2,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
-            // 这里可以添加饮食规律性分析内容
-            PlaceholderView("饮食规律性图表")
+
+            // 使用餐次分布环状图替代热力图，因为热力图需要大量历史数据
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val mealRecordRepository = com.example.nutrilog.di.AppModule.provideMealRecordRepository(context)
+            val records = remember {
+                mutableStateListOf<com.example.nutrilog.data.entities.MealRecord>()
+            }
+
+            // 使用LaunchedEffect获取数据
+            LaunchedEffect(Unit) {
+                val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                val weekAgo = java.util.Calendar.getInstance().apply {
+                    add(java.util.Calendar.DAY_OF_YEAR, -7)
+                }.let {
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(it.time)
+                }
+                val fetchedRecords = mealRecordRepository.getMealRecordsByDateRange(weekAgo, today)
+                records.clear()
+                records.addAll(fetchedRecords)
+            }
+
+            if (records.isNotEmpty()) {
+                com.example.nutrilog.ui.components.MealDistributionChart(records = records)
+            } else {
+                Text(
+                    text = "暂无足够数据进行饮食规律性分析",
+                    style = AppTypography.body1,
+                    color = AppColors.OnSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
     }
 }
 
 // 饮食多样性分析卡片
+// 饮食多样性分析卡片 - 修复嵌套问题
 @Composable
 fun VarietyAnalysisCard() {
     Card(
@@ -668,13 +712,75 @@ fun VarietyAnalysisCard() {
                 style = AppTypography.h2,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
+
+            // 使用真实数据获取食物类别分布
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val mealRecordRepository = com.example.nutrilog.di.AppModule.provideMealRecordRepository(context)
+            val foodRepository = com.example.nutrilog.di.AppModule.provideFoodRepository(context)
             
-            // 这里可以添加饮食多样性分析内容
-            PlaceholderView("饮食多样性图表")
+            val categoryData = remember {
+                mutableStateOf<Map<String, Double>>(emptyMap())
+            }
+
+            // 使用LaunchedEffect获取数据
+            LaunchedEffect(Unit) {
+                // 获取最近一周的记录
+                val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                val weekAgo = java.util.Calendar.getInstance().apply {
+                    add(java.util.Calendar.DAY_OF_YEAR, -7)
+                }.let {
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(it.time)
+                }
+                
+                val records = mealRecordRepository.getMealRecordsByDateRange(weekAgo, today)
+                
+                if (records.isNotEmpty()) {
+                    // 统计食物类别
+                    val categoryCount = mutableMapOf<String, Int>()
+                    
+                    records.forEach { record ->
+                        val foods = mealRecordRepository.getFoodsForRecord(record.id)
+                        foods.forEach { (food, _) ->
+                            val category = when (food.category) {
+                                com.example.nutrilog.data.entities.FoodCategory.GRAINS -> "谷薯类"
+                                com.example.nutrilog.data.entities.FoodCategory.VEGETABLES -> "蔬菜类"
+                                com.example.nutrilog.data.entities.FoodCategory.FRUITS -> "水果类"
+                                com.example.nutrilog.data.entities.FoodCategory.PROTEIN -> "蛋白质类"
+                                com.example.nutrilog.data.entities.FoodCategory.DAIRY -> "奶制品"
+                                com.example.nutrilog.data.entities.FoodCategory.OILS -> "油脂类"
+                                com.example.nutrilog.data.entities.FoodCategory.NUTS -> "坚果类"
+                                com.example.nutrilog.data.entities.FoodCategory.SNACKS -> "零食类"
+                                com.example.nutrilog.data.entities.FoodCategory.BEVERAGES -> "饮料类"
+                                com.example.nutrilog.data.entities.FoodCategory.SEASONINGS -> "调味品"
+                                else -> "其他"
+                            }
+                            categoryCount[category] = categoryCount.getOrDefault(category, 0) + 1
+                        }
+                    }
+                    
+                    // 转换为百分比
+                    val total = categoryCount.values.sum().toDouble()
+                    val percentageData = categoryCount.mapValues { (_, count) -> (count / total * 100).coerceAtMost(100.0) }
+                    categoryData.value = percentageData
+                } else {
+                    categoryData.value = emptyMap()
+                }
+            }
+
+            if (categoryData.value.isNotEmpty()) {
+                CategoryBarChart(varietyData = categoryData.value)
+            } else {
+                Text(
+                    text = "暂无足够数据进行饮食多样性分析",
+                    style = AppTypography.body1,
+                    color = AppColors.OnSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
     }
 }
-
 // 占位符视图
 @Composable
 fun PlaceholderView(title: String) {
@@ -754,31 +860,30 @@ fun HealthScoreOverview(score: HealthScore) {
                 style = AppTypography.h2,
                 color = AppColors.OnSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 大号分数显示
             Text(
                 text = "${score.total.toInt()}",
-                style = androidx.compose.ui.text.TextStyle(
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
                     fontSize = 64.sp
                 ),
                 color = getScoreColor(score.total.toInt())
             )
-            
+
             Spacer(modifier = Modifier.height(4.dp))
-            
+
             // 分数描述
             Text(
                 text = getScoreDescription(score.total.toInt()),
                 style = AppTypography.body1,
                 color = AppColors.OnSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // 各维度分数
             ScoreBreakdown(breakdown = score.breakdown)
         }

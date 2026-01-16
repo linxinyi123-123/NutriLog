@@ -125,4 +125,8 @@ class CompleteAnalysisService(
 
         return monday.format(formatter)
     }
+
+    suspend fun notifyAnalysisUpdated(date: String) {
+        getCompleteDailyReport(date)
+    }
 }

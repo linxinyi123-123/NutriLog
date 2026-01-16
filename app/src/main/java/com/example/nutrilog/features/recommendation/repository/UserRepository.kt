@@ -12,7 +12,6 @@ interface UserRepository {
     suspend fun updateLevel(userId: Long, level: Int)
     suspend fun updateUserTitles(userId: Long, newTitles: List<String>)
 
-    fun getDefaultUser(): User//模拟用户数据
 
 }
 

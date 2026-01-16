@@ -182,33 +182,162 @@ class AnalysisViewModel(private val analysisService: com.example.nutrilog.analys
     }
 }
 
+// 分享分析报告功能
+fun shareAnalysisReport(analysis: DailyAnalysis, context: android.content.Context) {
+    // 构建分享内容
+    val shareText = buildString {
+        appendLine("营养分析报告 - ${analysis.date}")
+        appendLine()
+        appendLine("健康评分: ${analysis.score.total.toInt()}分")
+        appendLine()
+        appendLine("营养摄入:")
+        appendLine("- 热量: ${analysis.nutrition.calories.toInt()} / ${analysis.target.calories.toInt()} 千卡")
+        appendLine("- 蛋白质: ${analysis.nutrition.protein.toInt()} / ${analysis.target.protein.toInt()} 克")
+        appendLine("- 碳水化合物: ${analysis.nutrition.carbs.toInt()} / ${analysis.target.carbs.toInt()} 克")
+        appendLine("- 脂肪: ${analysis.nutrition.fat.toInt()} / ${analysis.target.fat.toInt()} 克")
+        appendLine("- 膳食纤维: ${analysis.nutrition.fiber?.toInt() ?: 0} / ${analysis.target.fiber?.toInt() ?: 30} 克")
+        appendLine("- 糖: ${analysis.nutrition.sugar?.toInt() ?: 0} / ${analysis.target.sugar?.toInt() ?: 50} 克")
+        appendLine()
+        appendLine("健康建议:")
+        analysis.score.feedback.forEachIndexed { index, feedback ->
+            appendLine("${index + 1}. $feedback")
+        }
+    }
+    
+    // 创建分享Intent
+    val shareIntent = android.content.Intent().apply {
+        action = android.content.Intent.ACTION_SEND
+        type = "text/plain"
+        putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+        putExtra(android.content.Intent.EXTRA_SUBJECT, "营养分析报告 - ${analysis.date}")
+    }
+    
+    // 启动分享选择器
+    context.startActivity(
+        android.content.Intent.createChooser(
+            shareIntent,
+            "分享营养分析报告"
+        )
+    )
+}
+
+// 导出分析数据为CSV格式
+fun exportAnalysisData(analysis: DailyAnalysis, context: android.content.Context) {
+    try {
+        // 构建CSV内容
+        val csvContent = buildString {
+            // 标题行
+            appendLine("日期,项目,实际值,目标值,达成率")
+            
+            // 数据行
+            val items = listOf(
+                "热量" to Pair(analysis.nutrition.calories, analysis.target.calories),
+                "蛋白质" to Pair(analysis.nutrition.protein, analysis.target.protein),
+                "碳水化合物" to Pair(analysis.nutrition.carbs, analysis.target.carbs),
+                "脂肪" to Pair(analysis.nutrition.fat, analysis.target.fat),
+                "膳食纤维" to Pair(analysis.nutrition.fiber ?: 0.0, analysis.target.fiber ?: 30.0),
+                "糖" to Pair(analysis.nutrition.sugar ?: 0.0, analysis.target.sugar ?: 50.0)
+            )
+            
+            items.forEach { (name, values) ->
+                val (actual, target) = values
+                val percentage = if (target > 0) (actual / target * 100).toInt() else 0
+                appendLine("${analysis.date},$name,$actual,$target,$percentage%")
+            }
+        }
+        
+        // 获取外部存储目录
+        val exportDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOCUMENTS)
+        if (!exportDir.exists()) {
+            exportDir.mkdirs()
+        }
+        
+        // 创建CSV文件
+        val fileName = "营养分析_${analysis.date}.csv"
+        val file = java.io.File(exportDir, fileName)
+        
+        // 写入CSV内容
+        file.writeText(csvContent, charset = Charsets.UTF_8)
+        
+        // 显示导出成功提示
+        android.widget.Toast.makeText(
+            context,
+            "数据已导出到Documents目录: $fileName",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+        
+        // 可选：使用系统分享功能让用户选择打开方式
+        val shareIntent = android.content.Intent().apply {
+            action = android.content.Intent.ACTION_VIEW
+            setDataAndType(
+                android.net.Uri.fromFile(file),
+                "text/csv"
+            )
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        
+        if (shareIntent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(shareIntent)
+        }
+    } catch (e: Exception) {
+        // 显示导出失败提示
+        android.widget.Toast.makeText(
+            context,
+            "导出失败: ${e.message}",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+    }
+}
+
 // 分析主界面
 @Composable
 fun AnalysisScreen(navController: NavController, context: android.content.Context) {
     // 使用AppModule获取分析服务和ViewModel
     val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
     val viewModel = remember { AnalysisViewModel(analysisService) }
-    val datePickerState = rememberDatePickerState()
     
+    // 日历选择器状态
+    val selectedDate = remember { mutableStateOf(viewModel.getTodayDate()) }
+    val showDatePicker = remember { mutableStateOf(false) }
+    
+    // 监听分析状态
+    val analysisState by viewModel.analysisState.collectAsState()
+    val currentAnalysis = when (analysisState) {
+        is AnalysisState.Success -> (analysisState as AnalysisState.Success).analysis
+        else -> null
+    }
+
     Scaffold(
         topBar = {
             AnalysisTopBar(
-                selectedDate = viewModel.getTodayDate(),
-                onDateChange = { date -> 
-                    viewModel.viewModelScope.launch {
-                        viewModel.getAnalysisForDate(date).collect { analysisState ->
-                            // 直接使用collectAsState监听状态变化，不访问私有属性
-                        }
-                    }
+                selectedDate = selectedDate.value,
+                onDateChange = { date ->
+                    selectedDate.value = date
+                    viewModel.refreshAnalysis(date)
                 },
-                onCalendarClick = { /* 日历点击逻辑，暂时未实现 */ }
+                onCalendarClick = { showDatePicker.value = true },
+                analysis = currentAnalysis,
+                context = context
             )
         }
     ) {
         AnalysisContent(
             modifier = Modifier.padding(it),
             viewModel = viewModel,
-            onRefresh = { viewModel.refreshAnalysis(viewModel.getTodayDate()) }
+            onRefresh = { viewModel.refreshAnalysis(selectedDate.value) }
+        )
+    }
+    
+    // 日历对话框
+    if (showDatePicker.value) {
+        DatePickerDialog(
+            date = selectedDate.value,
+            onDateSelected = {
+                selectedDate.value = it
+                viewModel.refreshAnalysis(it)
+                showDatePicker.value = false
+            },
+            onDismiss = { showDatePicker.value = false }
         )
     }
 }
@@ -377,7 +506,9 @@ fun LoadingView(message: String = "正在加载...") {
 fun AnalysisTopBar(
     selectedDate: String,
     onDateChange: (String) -> Unit,
-    onCalendarClick: () -> Unit
+    onCalendarClick: () -> Unit,
+    analysis: DailyAnalysis?,
+    context: android.content.Context
 ) {
     TopAppBar(
         title = {
@@ -399,14 +530,18 @@ fun AnalysisTopBar(
             }
         },
         actions = {
-            IconButton(onClick = { /* 分享功能 */ }) {
+            IconButton(onClick = {
+                analysis?.let { shareAnalysisReport(it, context) }
+            }) {
                 Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.Share,
                     contentDescription = "分享报告",
                     tint = AppColors.OnSurface
                 )
             }
-            IconButton(onClick = { /* 导出功能 */ }) {
+            IconButton(onClick = {
+                analysis?.let { exportAnalysisData(it, context) }
+            }) {
                 Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.Download,
                     contentDescription = "导出数据",
@@ -890,6 +1025,105 @@ fun rememberDatePickerState(): DatePickerState {
     return remember {
         DatePickerState(false)
     }
+}
+
+// 日期选择器对话框组件
+@Composable
+fun DatePickerDialog(
+    date: String,
+    onDateSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    // 将字符串日期转换为LocalDate
+    val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    val selectedLocalDate = try {
+        val parsedDate = dateFormat.parse(date)
+        if (parsedDate != null) {
+            java.time.LocalDate.ofInstant(parsedDate.toInstant(), java.time.ZoneId.systemDefault())
+        } else {
+            java.time.LocalDate.now()
+        }
+    } catch (e: Exception) {
+        java.time.LocalDate.now()
+    }
+    
+    // 使用Compose的状态管理
+    val selectedYear = remember { mutableIntStateOf(selectedLocalDate.year) }
+    val selectedMonth = remember { mutableIntStateOf(selectedLocalDate.monthValue - 1) } // DatePicker使用0-11表示月份
+    val selectedDay = remember { mutableIntStateOf(selectedLocalDate.dayOfMonth) }
+    
+    // 简单的日期选择器UI，使用数字输入框
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "选择日期")
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // 年份选择
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "年份:")
+                    OutlinedTextField(
+                        value = selectedYear.intValue.toString(),
+                        onValueChange = { value ->
+                            val year = value.toIntOrNull() ?: selectedYear.intValue
+                            selectedYear.intValue = year.coerceIn(1900, 2100)
+                        },
+                        modifier = Modifier.width(120.dp),
+
+                    )
+                }
+                
+                // 月份选择
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "月份:")
+                    OutlinedTextField(
+                        value = (selectedMonth.intValue + 1).toString(), // 显示1-12
+                        onValueChange = { value ->
+                            val month = value.toIntOrNull() ?: (selectedMonth.intValue + 1)
+                            selectedMonth.intValue = (month.coerceIn(1, 12) - 1) // 转换为0-11
+                        },
+                        modifier = Modifier.width(120.dp),
+
+                    )
+                }
+                
+                // 日选择
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "日:")
+                    OutlinedTextField(
+                        value = selectedDay.intValue.toString(),
+                        onValueChange = { value ->
+                            val day = value.toIntOrNull() ?: selectedDay.intValue
+                            selectedDay.intValue = day.coerceIn(1, 31)
+                        },
+                        modifier = Modifier.width(120.dp),
+
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val formattedDate = String.format(
+                    java.util.Locale.getDefault(),
+                    "%04d-%02d-%02d",
+                    selectedYear.intValue,
+                    selectedMonth.intValue + 1, // 转换回1-12表示月份
+                    selectedDay.intValue
+                )
+                onDateSelected(formattedDate)
+                onDismiss()
+            }) {
+                Text(text = "确定")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(text = "取消")
+            }
+        }
+    )
 }
 
 // 日期选择器状态类（简化实现）

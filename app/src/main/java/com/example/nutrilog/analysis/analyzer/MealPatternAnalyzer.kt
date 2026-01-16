@@ -22,9 +22,13 @@ class MealPatternAnalyzer {
         val dinnerRecords = records.filter { it.mealType == MealType.DINNER }
         val dinnerRegularity = analyzeTimeRegularity(dinnerRecords, "18:00", "20:00")
 
-        // 分析夜宵频率
+        // 分析夜宵频率（避免除以零）
         val lateNightRecords = records.filter { isLateNightMeal(it.time) }
-        val lateNightFrequency = lateNightRecords.size.toDouble() / records.size
+        val lateNightFrequency = if (records.isEmpty()) {
+            0.0
+        } else {
+            lateNightRecords.size.toDouble() / records.size
+        }
 
         return RegularityAnalysis(
             breakfastScore = breakfastRegularity.score,

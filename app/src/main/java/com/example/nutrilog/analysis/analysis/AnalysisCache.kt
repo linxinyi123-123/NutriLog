@@ -28,4 +28,8 @@ class AnalysisCache {
         weeklyCache.clear()
         chartCache.clear()
     }
+
+    fun clearDailyCache(date: String) {
+        dailyCache.remove(date)
+    }
 }

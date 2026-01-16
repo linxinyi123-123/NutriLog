@@ -68,16 +68,31 @@ sealed class AnalysisState {
 }
 
 // 分析模块 ViewModel
-class AnalysisViewModel : ViewModel() {
+class AnalysisViewModel(private val analysisService: com.example.nutrilog.analysis.service.LazyAnalysisService) : ViewModel() {
     private val _analysisState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
     val analysisState: StateFlow<AnalysisState> = _analysisState.asStateFlow()
+    
+    // 周趋势分析状态
+    private val _weeklyTrendState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
+    val weeklyTrendState: StateFlow<AnalysisState> = _weeklyTrendState.asStateFlow()
+    
+    // 饮食规律分析状态
+    private val _regularityState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
+    val regularityState: StateFlow<AnalysisState> = _regularityState.asStateFlow()
+    
+    // 饮食多样性分析状态
+    private val _varietyState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
+    val varietyState: StateFlow<AnalysisState> = _varietyState.asStateFlow()
     
     init {
         // 初始加载今天的数据
         viewModelScope.launch {
-            getAnalysisForDate(getTodayDate()).collect {
+            val today = getTodayDate()
+            getAnalysisForDate(today).collect {
                 _analysisState.value = it
             }
+            // 加载周趋势分析
+            getWeeklyTrendAnalysis(today)
         }
     }
     
@@ -85,11 +100,8 @@ class AnalysisViewModel : ViewModel() {
         return flow {
             emit(AnalysisState.Loading)
             try {
-                // 模拟网络请求延迟
-                delay(1000)
-                
-                // 这里应该调用真实的分析服务
-                val analysis = getMockDailyAnalysis(date)
+                // 调用真实的分析服务
+                val analysis = analysisService.getDailyAnalysis(date)
                 
                 if (analysis.records.isEmpty()) {
                     emit(AnalysisState.Empty)
@@ -106,6 +118,22 @@ class AnalysisViewModel : ViewModel() {
         viewModelScope.launch {
             getAnalysisForDate(date).collect {
                 _analysisState.value = it
+            }
+            // 刷新周趋势分析
+            getWeeklyTrendAnalysis(date)
+        }
+    }
+    
+    // 获取周趋势分析
+    private fun getWeeklyTrendAnalysis(endDate: String) {
+        viewModelScope.launch {
+            _weeklyTrendState.value = AnalysisState.Loading
+            try {
+                // 这里需要实现周趋势分析的获取逻辑
+                // 暂时使用模拟数据
+                _weeklyTrendState.value = AnalysisState.Success(getMockDailyAnalysis(endDate))
+            } catch (e: Exception) {
+                _weeklyTrendState.value = AnalysisState.Error(e.message ?: "未知错误")
             }
         }
     }
@@ -156,23 +184,30 @@ class AnalysisViewModel : ViewModel() {
 
 // 分析主界面
 @Composable
-fun AnalysisScreen(navController: NavController) {
-    val viewModel = remember { AnalysisViewModel() }
+fun AnalysisScreen(navController: NavController, context: android.content.Context) {
+    // 使用AppModule获取分析服务和ViewModel
+    val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
+    val viewModel = remember { AnalysisViewModel(analysisService) }
     val datePickerState = rememberDatePickerState()
     
     Scaffold(
         topBar = {
             AnalysisTopBar(
                 selectedDate = viewModel.getTodayDate(),
-                onDateChange = { viewModel.getAnalysisForDate(it) },
+                onDateChange = { date -> 
+                    viewModel.viewModelScope.launch {
+                        viewModel.getAnalysisForDate(date).collect { analysisState ->
+                            // 直接使用collectAsState监听状态变化，不访问私有属性
+                        }
+                    }
+                },
                 onCalendarClick = { /* 日历点击逻辑，暂时未实现 */ }
             )
         }
     ) {
         AnalysisContent(
             modifier = Modifier.padding(it),
-            analysis = (viewModel.analysisState.collectAsState().value as? AnalysisState.Success)?.analysis,
-            isLoading = viewModel.analysisState.collectAsState().value is AnalysisState.Loading,
+            viewModel = viewModel,
             onRefresh = { viewModel.refreshAnalysis(viewModel.getTodayDate()) }
         )
     }
@@ -182,8 +217,11 @@ fun AnalysisScreen(navController: NavController) {
 @Composable
 fun AnalysisScreenWithData(
     date: String,
-    viewModel: AnalysisViewModel = viewModel()
+    context: android.content.Context
 ) {
+    // 使用AppModule获取分析服务和ViewModel
+    val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
+    val viewModel = remember { AnalysisViewModel(analysisService) }
     val analysisState by viewModel.getAnalysisForDate(date).collectAsState(initial = AnalysisState.Loading)
     
     when (analysisState) {
@@ -193,7 +231,7 @@ fun AnalysisScreenWithData(
         
         is AnalysisState.Success -> {
             val analysis = (analysisState as AnalysisState.Success).analysis
-            AnalysisDetailView(analysis = analysis)
+            AnalysisDetailView(analysis = analysis, viewModel = viewModel)
         }
         
         is AnalysisState.Error -> {
@@ -408,17 +446,30 @@ fun DateSelector(
 @Composable
 fun AnalysisContent(
     modifier: Modifier = Modifier,
-    analysis: DailyAnalysis?,
-    isLoading: Boolean,
+    viewModel: AnalysisViewModel,
     onRefresh: () -> Unit
 ) {
+    val analysisState = viewModel.analysisState.collectAsState().value
+    val weeklyTrendState = viewModel.weeklyTrendState.collectAsState().value
+    
     Box(modifier = modifier.fillMaxSize()) {
-        if (isLoading) {
-            LoadingView()
-        } else if (analysis == null) {
-            EmptyAnalysisView(onRefresh = onRefresh)
-        } else {
-            AnalysisDetailView(analysis = analysis)
+        when (analysisState) {
+            is AnalysisState.Loading -> {
+                LoadingView()
+            }
+            is AnalysisState.Success -> {
+                val analysis = (analysisState as AnalysisState.Success).analysis
+                AnalysisDetailView(analysis = analysis, viewModel = viewModel)
+            }
+            is AnalysisState.Empty -> {
+                EmptyAnalysisView(onRefresh = onRefresh)
+            }
+            is AnalysisState.Error -> {
+                ErrorView(
+                    message = (analysisState as AnalysisState.Error).message,
+                    onRetry = onRefresh
+                )
+            }
         }
     }
 }
@@ -457,7 +508,7 @@ fun EmptyAnalysisView(onRefresh: () -> Unit) {
 
 // 分析详情视图
 @Composable
-fun AnalysisDetailView(analysis: DailyAnalysis) {
+fun AnalysisDetailView(analysis: DailyAnalysis, viewModel: AnalysisViewModel) {
     val scrollState = rememberScrollState()
     // 模拟获取推荐数据
     val recommendations = getMockRecommendations()
@@ -486,7 +537,22 @@ fun AnalysisDetailView(analysis: DailyAnalysis) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 4. 食物类别分布柱状图
+        // 4. 周趋势分析卡片
+        TrendAnalysisCard(viewModel = viewModel)
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // 5. 饮食规律性分析卡片
+        RegularityAnalysisCard()
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // 6. 饮食多样性分析卡片
+        VarietyAnalysisCard()
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // 7. 食物类别分布柱状图
         val mockCategoryData = mapOf(
             "谷薯类" to 30.0,
             "蔬菜类" to 25.0,
@@ -499,12 +565,12 @@ fun AnalysisDetailView(analysis: DailyAnalysis) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 5. 改进建议
+        // 8. 改进建议
         ImprovementSuggestions(suggestions = analysis.score.feedback)
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 6. 个性化推荐
+        // 9. 个性化推荐
         RecommendationsSection(
             recommendations = recommendations,
             onRecommendationClick = { recommendation ->
@@ -515,13 +581,97 @@ fun AnalysisDetailView(analysis: DailyAnalysis) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 7. 改善计划
+        // 10. 改善计划
         Text(
             text = "改善计划",
             style = AppTypography.h2,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         ImprovementPlanView(plan = getMockImprovementPlan())
+    }
+}
+
+// 周趋势分析卡片
+@Composable
+fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "周趋势分析",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            val trendState = viewModel.weeklyTrendState.collectAsState().value
+            when (trendState) {
+                is AnalysisState.Loading -> {
+                    LoadingView(message = "正在加载趋势分析...")
+                }
+                is AnalysisState.Success -> {
+                    // 这里可以添加周趋势图表展示
+                    PlaceholderView("周趋势图表")
+                }
+                is AnalysisState.Error -> {
+                    ErrorView(
+                        message = (trendState as AnalysisState.Error).message,
+                        onRetry = { viewModel.refreshAnalysis(viewModel.getTodayDate()) }
+                    )
+                }
+                else -> {
+                    EmptyState(
+                        icon = Icons.Default.Assessment,
+                        title = "暂无趋势数据",
+                        message = "请记录至少一周的数据以查看趋势分析"
+                    )
+                }
+            }
+        }
+    }
+}
+
+// 饮食规律性分析卡片
+@Composable
+fun RegularityAnalysisCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "饮食规律性分析",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            // 这里可以添加饮食规律性分析内容
+            PlaceholderView("饮食规律性图表")
+        }
+    }
+}
+
+// 饮食多样性分析卡片
+@Composable
+fun VarietyAnalysisCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "饮食多样性分析",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            // 这里可以添加饮食多样性分析内容
+            PlaceholderView("饮食多样性图表")
+        }
     }
 }
 
@@ -887,10 +1037,10 @@ fun RecommendationsSection(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        LazyColumn(
+        Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(recommendations) {
+            recommendations.forEach {
                 recommendation ->
                 RecommendationCard(
                     recommendation = recommendation,

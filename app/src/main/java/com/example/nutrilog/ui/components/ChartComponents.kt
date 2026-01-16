@@ -183,52 +183,55 @@ fun SimplePieChart(
         val radius = minOf(size.width, size.height) * 0.35f
         val innerRadius = radius * 0.5f // 环形图的内半径
         
-        slices.forEach { slice ->
-            val sweepAngle = (slice.value / total) * 360f
-            
-            // 绘制环形
-            drawArc(
-                color = slice.color,
-                startAngle = startAngle,
-                sweepAngle = sweepAngle,
-                useCenter = false,
-                topLeft = Offset(center.x - radius, center.y - radius),
-                size = Size(radius * 2, radius * 2),
-                style = Stroke(width = radius - innerRadius)
-            )
-            
-            // 绘制标签线和标签
-            val labelAngle = startAngle + sweepAngle / 2
-            val labelRadius = radius + 20f
-            val cosValue = cos(labelAngle * Math.PI / 180.0).toFloat()
-            val sinValue = sin(labelAngle * Math.PI / 180.0).toFloat()
-            val labelX = center.x + labelRadius * cosValue
-            val labelY = center.y + labelRadius * sinValue
-            
-            drawLine(
-                color = slice.color,
-                start = Offset(
-                    center.x + radius * cosValue,
-                    center.y + radius * sinValue
-                ),
-                end = Offset(labelX, labelY),
-                strokeWidth = 2f
-            )
-            
-            drawContext.canvas.nativeCanvas.apply {
-                drawText(
-                    "${slice.label} ${((slice.value / total) * 100).toInt()}%",
-                    labelX,
-                    labelY,
-                    android.graphics.Paint().apply {
-                        color = slice.color.toArgb()
-                        textSize = 14.0f
-                        textAlign = android.graphics.Paint.Align.CENTER
-                    }
+        // 避免除以零，当total为0时不绘制
+        if (total > 0) {
+            slices.forEach { slice ->
+                val sweepAngle = (slice.value / total) * 360f
+                
+                // 绘制环形
+                drawArc(
+                    color = slice.color,
+                    startAngle = startAngle,
+                    sweepAngle = sweepAngle,
+                    useCenter = false,
+                    topLeft = Offset(center.x - radius, center.y - radius),
+                    size = Size(radius * 2, radius * 2),
+                    style = Stroke(width = radius - innerRadius)
                 )
+                
+                // 绘制标签线和标签
+                val labelAngle = startAngle + sweepAngle / 2
+                val labelRadius = radius + 20f
+                val cosValue = cos(labelAngle * Math.PI / 180.0).toFloat()
+                val sinValue = sin(labelAngle * Math.PI / 180.0).toFloat()
+                val labelX = center.x + labelRadius * cosValue
+                val labelY = center.y + labelRadius * sinValue
+                
+                drawLine(
+                    color = slice.color,
+                    start = Offset(
+                        center.x + radius * cosValue,
+                        center.y + radius * sinValue
+                    ),
+                    end = Offset(labelX, labelY),
+                    strokeWidth = 2f
+                )
+                
+                drawContext.canvas.nativeCanvas.apply {
+                    drawText(
+                        "${slice.label} ${((slice.value / total) * 100).toInt()}%",
+                        labelX,
+                        labelY,
+                        android.graphics.Paint().apply {
+                            color = slice.color.toArgb()
+                            textSize = 14.0f
+                            textAlign = android.graphics.Paint.Align.CENTER
+                        }
+                    )
+                }
+                
+                startAngle += sweepAngle
             }
-            
-            startAngle += sweepAngle
         }
     }
 }

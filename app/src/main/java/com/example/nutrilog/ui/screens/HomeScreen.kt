@@ -13,6 +13,8 @@ import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,8 +28,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
-    val viewModel: HomeViewModel = viewModel()
+fun HomeScreen(navController: NavController, context: android.content.Context) {
+    // 使用AppModule获取HomeViewModel，确保使用真实数据
+    val viewModel = remember {
+        com.example.nutrilog.di.AppModule.provideHomeViewModel(context)
+    }
     
     Scaffold(
         topBar = {
@@ -80,8 +85,9 @@ fun HomeScreen(navController: NavController) {
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            // 5. 最近饮食记录
-            RecentMealsSection(meals = viewModel.recentMeals)
+            // 5. 最近饮食记录 - 使用Flow收集真实数据
+            val recentMealsState = viewModel.recentMeals.collectAsState()
+            RecentMealsSection(meals = recentMealsState.value)
         }
     }
 }

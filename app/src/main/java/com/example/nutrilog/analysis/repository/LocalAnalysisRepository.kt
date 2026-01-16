@@ -55,9 +55,9 @@ class LocalAnalysisRepository(
     }
 
     override suspend fun transRecords(records :List<com.example.nutrilog.data.entities.MealRecord>):List<MealRecord>{
-        val list = mutableListOf<Pair<FoodItem, Double>>()
         val ret =  mutableListOf<MealRecord>()
         for (record in records) {
+            val list = mutableListOf<Pair<FoodItem, Double>>() // 在每次循环开始时创建新列表
             val foods = recordFoodDao.getFoodsForRecord(record.id)
             for(food in foods){
                 val newfood = food.food
@@ -86,7 +86,6 @@ class LocalAnalysisRepository(
                 foods = list
             )
             ret.add(newRecord)
-            list.clear()
         }
         return ret
     }

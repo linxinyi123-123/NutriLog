@@ -107,6 +107,12 @@ object AppModule {
         return ReportPreviewViewModel()
     }    
     
+    fun provideHomeViewModel(context: Context): com.example.nutrilog.ui.viewmodels.HomeViewModel {
+        val mealRecordRepository = provideMealRecordRepository(context)
+        val foodRepository = provideFoodRepository(context)
+        return com.example.nutrilog.ui.viewmodels.HomeViewModel(mealRecordRepository, foodRepository)
+    }
+    
     // 清理资源（用于测试）
     fun clear() {
         database = null

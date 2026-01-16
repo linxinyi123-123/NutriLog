@@ -8,6 +8,8 @@ import com.example.nutrilog.analysis.analyzer.MealPatternAnalyzer
 import com.example.nutrilog.analysis.calculator.BasicNutritionCalculator
 import com.example.nutrilog.analysis.calculator.HealthScoreCalculatorV3
 import com.example.nutrilog.analysis.calculator.PersonalizedTargetCalculator
+import com.example.nutrilog.analysis.exception.CalculationException
+import com.example.nutrilog.analysis.exception.DataNotFoundException
 import com.example.nutrilog.analysis.generator.InsightGenerator
 import com.example.nutrilog.analysis.view.AnalysisReport
 import com.example.nutrilog.analysis.view.ChartDataFactory
@@ -44,13 +46,30 @@ class CompleteAnalysisService(
         // 1. 获取数据
         val records = recordRepository.getMealRecordsByDate(date)
 
+        if (records.isEmpty()) {
+            throw DataNotFoundException("No meal records found for date: $date")
+        }
+
         // 2. 计算分析
-        val nutrition = calculator.calculateDailyNutrition(convertWithEstimation(records))
-        val target = targetCalculator.calculateTargets(userProfile)
+        val nutrition = try {
+            calculator.calculateDailyNutrition(convertWithEstimation(records))
+        } catch (e: Exception) {
+            throw CalculationException("Failed to calculate nutrition for date: $date", e)
+        }
+
+        val target = try {
+            targetCalculator.calculateTargets(userProfile)
+        } catch (e: Exception) {
+            throw CalculationException("Failed to calculate nutrition targets", e)
+        }
 
         // 获取一周数据用于多样性分析
         val weekStart = getWeekStartDate(date)
-        val weekRecords = convertWithEstimation(recordRepository.getMealRecordsByDateRange(weekStart,date))
+        val weekRecords = try {
+            convertWithEstimation(recordRepository.getMealRecordsByDateRange(weekStart,date))
+        } catch (e: Exception) {
+            throw CalculationException("Failed to get weekly records", e)
+        }
 
         val item = NutritionFacts(
             calories = target.calories.min,
@@ -63,16 +82,24 @@ class CompleteAnalysisService(
         )
         // 3. 计算评分
         val scoreCalculator = HealthScoreCalculatorV3(target, patternAnalyzer, varietyAnalyzer)
-        val score = scoreCalculator.calculateScore(weekRecords,
-            com.example.nutrilog.shared.DailyAnalysis(
-                date, HealthScore(0.0,mapOf<String, Double>(),emptyList()),nutrition,
-                item,convertWithEstimation(records)))
+        val score = try {
+            scoreCalculator.calculateScore(weekRecords,
+                com.example.nutrilog.shared.DailyAnalysis(
+                    date, HealthScore(0.0,mapOf<String, Double>(),emptyList()),nutrition,
+                    item,convertWithEstimation(records)))
+        } catch (e: Exception) {
+            throw CalculationException("Failed to calculate health score", e)
+        }
 
         // 4. 生成图表
-        val charts = listOf(
-            chartFactory.createMacroPieChart(nutrition),
-            chartFactory.createTargetRadarChart(nutrition, target)
-        )
+        val charts = try {
+            listOf(
+                chartFactory.createMacroPieChart(nutrition),
+                chartFactory.createTargetRadarChart(nutrition, target)
+            )
+        } catch (e: Exception) {
+            throw CalculationException("Failed to generate charts", e)
+        }
 
         val dailyTrendPoint = DailyTrendPoint(
             date,nutrition,score.total
@@ -82,7 +109,11 @@ class CompleteAnalysisService(
         listPoint.add(dailyTrendPoint)
 
         // 5. 生成洞察
-        val insights = insighGenerator.generateTrendInsights(listPoint)
+        val insights = try {
+            insighGenerator.generateTrendInsights(listPoint)
+        } catch (e: Exception) {
+            throw CalculationException("Failed to generate insights", e)
+        }
 
         return AnalysisReport(
             date = date,

@@ -113,4 +113,19 @@ data class FoodItem(
             FoodUnit.CUSTOM -> amount
         }
     }
+
+    fun toSharedFoodItem(food : FoodItem): com.example.nutrilog.shared.FoodItem{
+        return com.example.nutrilog.shared.FoodItem(
+            id = food.id,
+            name = food.name,
+            category = food.category,
+            calories = food.calories ,
+            protein = food.protein,
+            carbs = food.carbs,
+            fat = food.fat,
+            sodium = food.sodium,
+            fiber = food.fiber,
+            sugar = food.sugar,
+        )
+    }
 }

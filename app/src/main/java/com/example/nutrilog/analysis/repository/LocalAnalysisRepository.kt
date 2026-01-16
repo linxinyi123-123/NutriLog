@@ -1,6 +1,8 @@
 package com.example.nutrilog.analysis.repository
 
 import com.example.nutrilog.common.models.UserProfile
+import com.example.nutrilog.common.models.Gender
+import com.example.nutrilog.common.models.ActivityLevel
 import com.example.nutrilog.data.dao.FoodDao
 import com.example.nutrilog.data.dao.MealRecordDao
 import com.example.nutrilog.data.dao.RecordFoodDao
@@ -14,7 +16,16 @@ class LocalAnalysisRepository(
     private val recordFoodDao: RecordFoodDao
 ) : AnalysisRepository {
     override suspend fun getUserProfile(): UserProfile? {
-        TODO("Not yet implemented")
+        // 返回默认用户画像，实际项目中应该从数据库或SharedPreferences获取
+        return UserProfile(
+            id = 1,
+            name = "用户",
+            age = 20,
+            gender = Gender.MALE,
+            height = 170,
+            weight = 65,
+            activityLevel = ActivityLevel.MODERATE
+        )
     }
 
     override suspend fun getRecordsByDate(date: String): List<MealRecord> {
@@ -44,9 +55,9 @@ class LocalAnalysisRepository(
     }
 
     override suspend fun transRecords(records :List<com.example.nutrilog.data.entities.MealRecord>):List<MealRecord>{
-        val list = mutableListOf<Pair<FoodItem, Double>>()
         val ret =  mutableListOf<MealRecord>()
         for (record in records) {
+            val list = mutableListOf<Pair<FoodItem, Double>>() // 在每次循环开始时创建新列表
             val foods = recordFoodDao.getFoodsForRecord(record.id)
             for(food in foods){
                 val newfood = food.food
@@ -75,7 +86,6 @@ class LocalAnalysisRepository(
                 foods = list
             )
             ret.add(newRecord)
-            list.clear()
         }
         return ret
     }

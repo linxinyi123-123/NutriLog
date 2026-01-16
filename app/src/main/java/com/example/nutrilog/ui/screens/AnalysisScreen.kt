@@ -19,6 +19,11 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.CheckCircle
+import com.example.nutrilog.ui.components.ChartContainer
+import com.example.nutrilog.ui.components.LineDataPoint
+import com.example.nutrilog.ui.components.MealTimeHeatmap
+import com.example.nutrilog.ui.components.CategoryBarChart
+import com.example.nutrilog.ui.components.LineChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,16 +73,31 @@ sealed class AnalysisState {
 }
 
 // 分析模块 ViewModel
-class AnalysisViewModel : ViewModel() {
+class AnalysisViewModel(private val analysisService: com.example.nutrilog.analysis.service.LazyAnalysisService) : ViewModel() {
     private val _analysisState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
     val analysisState: StateFlow<AnalysisState> = _analysisState.asStateFlow()
+    
+    // 周趋势分析状态
+    private val _weeklyTrendState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
+    val weeklyTrendState: StateFlow<AnalysisState> = _weeklyTrendState.asStateFlow()
+    
+    // 饮食规律分析状态
+    private val _regularityState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
+    val regularityState: StateFlow<AnalysisState> = _regularityState.asStateFlow()
+    
+    // 饮食多样性分析状态
+    private val _varietyState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
+    val varietyState: StateFlow<AnalysisState> = _varietyState.asStateFlow()
     
     init {
         // 初始加载今天的数据
         viewModelScope.launch {
-            getAnalysisForDate(getTodayDate()).collect {
+            val today = getTodayDate()
+            getAnalysisForDate(today).collect {
                 _analysisState.value = it
             }
+            // 加载周趋势分析
+            getWeeklyTrendAnalysis(today)
         }
     }
     
@@ -85,11 +105,8 @@ class AnalysisViewModel : ViewModel() {
         return flow {
             emit(AnalysisState.Loading)
             try {
-                // 模拟网络请求延迟
-                delay(1000)
-                
-                // 这里应该调用真实的分析服务
-                val analysis = getMockDailyAnalysis(date)
+                // 调用真实的分析服务
+                val analysis = analysisService.getDailyAnalysis(date)
                 
                 if (analysis.records.isEmpty()) {
                     emit(AnalysisState.Empty)
@@ -106,6 +123,22 @@ class AnalysisViewModel : ViewModel() {
         viewModelScope.launch {
             getAnalysisForDate(date).collect {
                 _analysisState.value = it
+            }
+            // 刷新周趋势分析
+            getWeeklyTrendAnalysis(date)
+        }
+    }
+    
+    // 获取周趋势分析
+    private fun getWeeklyTrendAnalysis(endDate: String) {
+        viewModelScope.launch {
+            _weeklyTrendState.value = AnalysisState.Loading
+            try {
+                // 这里需要实现周趋势分析的获取逻辑
+                // 暂时使用模拟数据
+                _weeklyTrendState.value = AnalysisState.Success(getMockDailyAnalysis(endDate))
+            } catch (e: Exception) {
+                _weeklyTrendState.value = AnalysisState.Error(e.message ?: "未知错误")
             }
         }
     }
@@ -154,26 +187,162 @@ class AnalysisViewModel : ViewModel() {
     }
 }
 
+// 分享分析报告功能
+fun shareAnalysisReport(analysis: DailyAnalysis, context: android.content.Context) {
+    // 构建分享内容
+    val shareText = buildString {
+        appendLine("营养分析报告 - ${analysis.date}")
+        appendLine()
+        appendLine("健康评分: ${analysis.score.total.toInt()}分")
+        appendLine()
+        appendLine("营养摄入:")
+        appendLine("- 热量: ${analysis.nutrition.calories.toInt()} / ${analysis.target.calories.toInt()} 千卡")
+        appendLine("- 蛋白质: ${analysis.nutrition.protein.toInt()} / ${analysis.target.protein.toInt()} 克")
+        appendLine("- 碳水化合物: ${analysis.nutrition.carbs.toInt()} / ${analysis.target.carbs.toInt()} 克")
+        appendLine("- 脂肪: ${analysis.nutrition.fat.toInt()} / ${analysis.target.fat.toInt()} 克")
+        appendLine("- 膳食纤维: ${analysis.nutrition.fiber?.toInt() ?: 0} / ${analysis.target.fiber?.toInt() ?: 30} 克")
+        appendLine("- 糖: ${analysis.nutrition.sugar?.toInt() ?: 0} / ${analysis.target.sugar?.toInt() ?: 50} 克")
+        appendLine()
+        appendLine("健康建议:")
+        analysis.score.feedback.forEachIndexed { index, feedback ->
+            appendLine("${index + 1}. $feedback")
+        }
+    }
+
+    // 创建分享Intent
+    val shareIntent = android.content.Intent().apply {
+        action = android.content.Intent.ACTION_SEND
+        type = "text/plain"
+        putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+        putExtra(android.content.Intent.EXTRA_SUBJECT, "营养分析报告 - ${analysis.date}")
+    }
+
+    // 启动分享选择器
+    context.startActivity(
+        android.content.Intent.createChooser(
+            shareIntent,
+            "分享营养分析报告"
+        )
+    )
+}
+
+// 导出分析数据为CSV格式
+fun exportAnalysisData(analysis: DailyAnalysis, context: android.content.Context) {
+    try {
+        // 构建CSV内容
+        val csvContent = buildString {
+            // 标题行
+            appendLine("日期,项目,实际值,目标值,达成率")
+
+            // 数据行
+            val items = listOf(
+                "热量" to Pair(analysis.nutrition.calories, analysis.target.calories),
+                "蛋白质" to Pair(analysis.nutrition.protein, analysis.target.protein),
+                "碳水化合物" to Pair(analysis.nutrition.carbs, analysis.target.carbs),
+                "脂肪" to Pair(analysis.nutrition.fat, analysis.target.fat),
+                "膳食纤维" to Pair(analysis.nutrition.fiber ?: 0.0, analysis.target.fiber ?: 30.0),
+                "糖" to Pair(analysis.nutrition.sugar ?: 0.0, analysis.target.sugar ?: 50.0)
+            )
+
+            items.forEach { (name, values) ->
+                val (actual, target) = values
+                val percentage = if (target > 0) (actual / target * 100).toInt() else 0
+                appendLine("${analysis.date},$name,$actual,$target,$percentage%")
+            }
+        }
+
+        // 获取外部存储目录
+        val exportDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOCUMENTS)
+        if (!exportDir.exists()) {
+            exportDir.mkdirs()
+        }
+
+        // 创建CSV文件
+        val fileName = "营养分析_${analysis.date}.csv"
+        val file = java.io.File(exportDir, fileName)
+
+        // 写入CSV内容
+        file.writeText(csvContent, charset = Charsets.UTF_8)
+
+        // 显示导出成功提示
+        android.widget.Toast.makeText(
+            context,
+            "数据已导出到Documents目录: $fileName",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+
+        // 可选：使用系统分享功能让用户选择打开方式
+        val shareIntent = android.content.Intent().apply {
+            action = android.content.Intent.ACTION_VIEW
+            setDataAndType(
+                android.net.Uri.fromFile(file),
+                "text/csv"
+            )
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+
+        if (shareIntent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(shareIntent)
+        }
+    } catch (e: Exception) {
+        // 显示导出失败提示
+        android.widget.Toast.makeText(
+            context,
+            "导出失败: ${e.message}",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+    }
+}
+
 // 分析主界面
 @Composable
-fun AnalysisScreen(navController: NavController) {
-    val viewModel = remember { AnalysisViewModel() }
-    val datePickerState = rememberDatePickerState()
-    
+fun AnalysisScreen(navController: NavController, context: android.content.Context) {
+    // 使用AppModule获取分析服务和ViewModel
+    val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
+    val viewModel = remember { AnalysisViewModel(analysisService) }
+
+    // 日历选择器状态
+    val selectedDate = remember { mutableStateOf(viewModel.getTodayDate()) }
+    val showDatePicker = remember { mutableStateOf(false) }
+
+    // 监听分析状态
+    val analysisState by viewModel.analysisState.collectAsState()
+    val currentAnalysis = when (analysisState) {
+        is AnalysisState.Success -> (analysisState as AnalysisState.Success).analysis
+        else -> null
+    }
+
     Scaffold(
         topBar = {
             AnalysisTopBar(
-                selectedDate = viewModel.getTodayDate(),
-                onDateChange = { viewModel.getAnalysisForDate(it) },
-                onCalendarClick = { /* 日历点击逻辑，暂时未实现 */ }
+                selectedDate = selectedDate.value,
+                onDateChange = { date ->
+                    selectedDate.value = date
+                    viewModel.refreshAnalysis(date)
+                },
+                onCalendarClick = { showDatePicker.value = true },
+                analysis = currentAnalysis,
+                context = context
             )
         }
     ) {
         AnalysisContent(
             modifier = Modifier.padding(it),
-            analysis = (viewModel.analysisState.collectAsState().value as? AnalysisState.Success)?.analysis,
-            isLoading = viewModel.analysisState.collectAsState().value is AnalysisState.Loading,
-            onRefresh = { viewModel.refreshAnalysis(viewModel.getTodayDate()) }
+            viewModel = viewModel,
+            onRefresh = { viewModel.refreshAnalysis(selectedDate.value) }
+        )
+    }
+
+    // 日历对话框
+    if (showDatePicker.value) {
+        DatePickerDialog(
+            date = selectedDate.value,
+            onDateSelected = {
+                selectedDate.value = it
+                viewModel.refreshAnalysis(it)
+                showDatePicker.value = false
+            },
+            onDismiss = { showDatePicker.value = false }
         )
     }
 }
@@ -182,8 +351,11 @@ fun AnalysisScreen(navController: NavController) {
 @Composable
 fun AnalysisScreenWithData(
     date: String,
-    viewModel: AnalysisViewModel = viewModel()
+    context: android.content.Context
 ) {
+    // 使用AppModule获取分析服务和ViewModel
+    val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
+    val viewModel = remember { AnalysisViewModel(analysisService) }
     val analysisState by viewModel.getAnalysisForDate(date).collectAsState(initial = AnalysisState.Loading)
     
     when (analysisState) {
@@ -193,7 +365,7 @@ fun AnalysisScreenWithData(
         
         is AnalysisState.Success -> {
             val analysis = (analysisState as AnalysisState.Success).analysis
-            AnalysisDetailView(analysis = analysis)
+            AnalysisDetailView(analysis = analysis, viewModel = viewModel)
         }
         
         is AnalysisState.Error -> {
@@ -339,7 +511,9 @@ fun LoadingView(message: String = "正在加载...") {
 fun AnalysisTopBar(
     selectedDate: String,
     onDateChange: (String) -> Unit,
-    onCalendarClick: () -> Unit
+    onCalendarClick: () -> Unit,
+    analysis: DailyAnalysis?,
+    context: android.content.Context
 ) {
     TopAppBar(
         title = {
@@ -361,14 +535,18 @@ fun AnalysisTopBar(
             }
         },
         actions = {
-            IconButton(onClick = { /* 分享功能 */ }) {
+            IconButton(onClick = {
+                analysis?.let { shareAnalysisReport(it, context) }
+            }) {
                 Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.Share,
                     contentDescription = "分享报告",
                     tint = AppColors.OnSurface
                 )
             }
-            IconButton(onClick = { /* 导出功能 */ }) {
+            IconButton(onClick = {
+                analysis?.let { exportAnalysisData(it, context) }
+            }) {
                 Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.Download,
                     contentDescription = "导出数据",
@@ -408,17 +586,30 @@ fun DateSelector(
 @Composable
 fun AnalysisContent(
     modifier: Modifier = Modifier,
-    analysis: DailyAnalysis?,
-    isLoading: Boolean,
+    viewModel: AnalysisViewModel,
     onRefresh: () -> Unit
 ) {
+    val analysisState = viewModel.analysisState.collectAsState().value
+    val weeklyTrendState = viewModel.weeklyTrendState.collectAsState().value
+    
     Box(modifier = modifier.fillMaxSize()) {
-        if (isLoading) {
-            LoadingView()
-        } else if (analysis == null) {
-            EmptyAnalysisView(onRefresh = onRefresh)
-        } else {
-            AnalysisDetailView(analysis = analysis)
+        when (analysisState) {
+            is AnalysisState.Loading -> {
+                LoadingView()
+            }
+            is AnalysisState.Success -> {
+                val analysis = (analysisState as AnalysisState.Success).analysis
+                AnalysisDetailView(analysis = analysis, viewModel = viewModel)
+            }
+            is AnalysisState.Empty -> {
+                EmptyAnalysisView(onRefresh = onRefresh)
+            }
+            is AnalysisState.Error -> {
+                ErrorView(
+                    message = (analysisState as AnalysisState.Error).message,
+                    onRetry = onRefresh
+                )
+            }
         }
     }
 }
@@ -457,7 +648,7 @@ fun EmptyAnalysisView(onRefresh: () -> Unit) {
 
 // 分析详情视图
 @Composable
-fun AnalysisDetailView(analysis: DailyAnalysis) {
+fun AnalysisDetailView(analysis: DailyAnalysis, viewModel: AnalysisViewModel) {
     val scrollState = rememberScrollState()
     // 模拟获取推荐数据
     val recommendations = getMockRecommendations()
@@ -486,7 +677,22 @@ fun AnalysisDetailView(analysis: DailyAnalysis) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 4. 食物类别分布柱状图
+        // 4. 周趋势分析卡片
+        TrendAnalysisCard(viewModel = viewModel)
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // 5. 饮食规律性分析卡片
+        RegularityAnalysisCard()
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // 6. 饮食多样性分析卡片
+        VarietyAnalysisCard()
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // 7. 食物类别分布柱状图
         val mockCategoryData = mapOf(
             "谷薯类" to 30.0,
             "蔬菜类" to 25.0,
@@ -499,12 +705,12 @@ fun AnalysisDetailView(analysis: DailyAnalysis) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 5. 改进建议
+        // 8. 改进建议
         ImprovementSuggestions(suggestions = analysis.score.feedback)
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 6. 个性化推荐
+        // 9. 个性化推荐
         RecommendationsSection(
             recommendations = recommendations,
             onRecommendationClick = { recommendation ->
@@ -515,13 +721,97 @@ fun AnalysisDetailView(analysis: DailyAnalysis) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 7. 改善计划
+        // 10. 改善计划
         Text(
             text = "改善计划",
             style = AppTypography.h2,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         ImprovementPlanView(plan = getMockImprovementPlan())
+    }
+}
+
+// 周趋势分析卡片
+@Composable
+fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "周趋势分析",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            val trendState = viewModel.weeklyTrendState.collectAsState().value
+            when (trendState) {
+                is AnalysisState.Loading -> {
+                    LoadingView(message = "正在加载趋势分析...")
+                }
+                is AnalysisState.Success -> {
+                    // 这里可以添加周趋势图表展示
+                    PlaceholderView("周趋势图表")
+                }
+                is AnalysisState.Error -> {
+                    ErrorView(
+                        message = (trendState as AnalysisState.Error).message,
+                        onRetry = { viewModel.refreshAnalysis(viewModel.getTodayDate()) }
+                    )
+                }
+                else -> {
+                    EmptyState(
+                        icon = Icons.Default.Assessment,
+                        title = "暂无趋势数据",
+                        message = "请记录至少一周的数据以查看趋势分析"
+                    )
+                }
+            }
+        }
+    }
+}
+
+// 饮食规律性分析卡片
+@Composable
+fun RegularityAnalysisCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "饮食规律性分析",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            // 这里可以添加饮食规律性分析内容
+            PlaceholderView("饮食规律性图表")
+        }
+    }
+}
+
+// 饮食多样性分析卡片
+@Composable
+fun VarietyAnalysisCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "饮食多样性分析",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            // 这里可以添加饮食多样性分析内容
+            PlaceholderView("饮食多样性图表")
+        }
     }
 }
 
@@ -742,6 +1032,105 @@ fun rememberDatePickerState(): DatePickerState {
     }
 }
 
+// 日期选择器对话框组件
+@Composable
+fun DatePickerDialog(
+    date: String,
+    onDateSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    // 将字符串日期转换为LocalDate
+    val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    val selectedLocalDate = try {
+        val parsedDate = dateFormat.parse(date)
+        if (parsedDate != null) {
+            java.time.LocalDate.ofInstant(parsedDate.toInstant(), java.time.ZoneId.systemDefault())
+        } else {
+            java.time.LocalDate.now()
+        }
+    } catch (e: Exception) {
+        java.time.LocalDate.now()
+    }
+
+    // 使用Compose的状态管理
+    val selectedYear = remember { mutableIntStateOf(selectedLocalDate.year) }
+    val selectedMonth = remember { mutableIntStateOf(selectedLocalDate.monthValue - 1) } // DatePicker使用0-11表示月份
+    val selectedDay = remember { mutableIntStateOf(selectedLocalDate.dayOfMonth) }
+
+    // 简单的日期选择器UI，使用数字输入框
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "选择日期")
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // 年份选择
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "年份:")
+                    OutlinedTextField(
+                        value = selectedYear.intValue.toString(),
+                        onValueChange = { value ->
+                            val year = value.toIntOrNull() ?: selectedYear.intValue
+                            selectedYear.intValue = year.coerceIn(1900, 2100)
+                        },
+                        modifier = Modifier.width(120.dp),
+
+                    )
+                }
+
+                // 月份选择
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "月份:")
+                    OutlinedTextField(
+                        value = (selectedMonth.intValue + 1).toString(), // 显示1-12
+                        onValueChange = { value ->
+                            val month = value.toIntOrNull() ?: (selectedMonth.intValue + 1)
+                            selectedMonth.intValue = (month.coerceIn(1, 12) - 1) // 转换为0-11
+                        },
+                        modifier = Modifier.width(120.dp),
+
+                    )
+                }
+
+                // 日选择
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "日:")
+                    OutlinedTextField(
+                        value = selectedDay.intValue.toString(),
+                        onValueChange = { value ->
+                            val day = value.toIntOrNull() ?: selectedDay.intValue
+                            selectedDay.intValue = day.coerceIn(1, 31)
+                        },
+                        modifier = Modifier.width(120.dp),
+
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val formattedDate = String.format(
+                    java.util.Locale.getDefault(),
+                    "%04d-%02d-%02d",
+                    selectedYear.intValue,
+                    selectedMonth.intValue + 1, // 转换回1-12表示月份
+                    selectedDay.intValue
+                )
+                onDateSelected(formattedDate)
+                onDismiss()
+            }) {
+                Text(text = "确定")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(text = "取消")
+            }
+        }
+    )
+}
+
 // 日期选择器状态类（简化实现）
 class DatePickerState(
     var isVisible: Boolean
@@ -887,10 +1276,10 @@ fun RecommendationsSection(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        LazyColumn(
+        Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(recommendations) {
+            recommendations.forEach {
                 recommendation ->
                 RecommendationCard(
                     recommendation = recommendation,

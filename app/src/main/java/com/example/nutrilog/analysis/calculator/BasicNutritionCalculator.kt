@@ -23,18 +23,18 @@ class BasicNutritionCalculator {
 
     // 计算一餐的营养总和
     fun calculateMealNutrition(foods: List<Pair<FoodItem, Double>>): NutritionFacts {
-        val total = NutritionFacts()
+        var total = NutritionFacts()
         foods.forEach { (food, amount) ->
-            total.plus(calculateFoodNutrition(food, amount))
+            total = total.plus(calculateFoodNutrition(food, amount))
         }
         return total
     }
 
     // 计算一天的营养总和
     fun calculateDailyNutrition(meals: List<MealRecord>): NutritionFacts {
-        val total = NutritionFacts()
+        var total = NutritionFacts()
         meals.forEach { meal ->
-            total.plus(calculateMealNutrition(meal.foods))
+            total = total.plus(calculateMealNutrition(meal.foods))
         }
         return total
     }

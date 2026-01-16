@@ -10,19 +10,42 @@ import com.example.nutrilog.data.entities.MealRecordWithFoods
 import com.example.nutrilog.data.entities.MealType
 import com.example.nutrilog.data.entities.RecordFoodItem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class MealRecordRepository(
     private val mealRecordDao: MealRecordDao,
     private val recordFoodDao: RecordFoodDao
 ) {
+    private val _recordUpdates = MutableSharedFlow<com.example.nutrilog.analysis.listener.RecordUpdate>()
+    val recordUpdates = _recordUpdates.asSharedFlow()
+
+    fun recordUpdates(): Flow<com.example.nutrilog.analysis.listener.RecordUpdate> = _recordUpdates.asSharedFlow()
+
     // 基础CRUD操作
-    suspend fun insertMealRecord(record: MealRecord): Long = mealRecordDao.insert(record)
-    
-    suspend fun updateMealRecord(record: MealRecord) = mealRecordDao.update(record)
-    
-    suspend fun deleteMealRecord(record: MealRecord) = mealRecordDao.delete(record)
-    
-    suspend fun deleteMealRecordById(id: Long) = mealRecordDao.deleteById(id)
+    suspend fun insertMealRecord(record: MealRecord): Long {
+        val id = mealRecordDao.insert(record)
+        _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordAdded(record))
+        return id
+    }
+
+    suspend fun updateMealRecord(record: MealRecord) {
+        mealRecordDao.update(record)
+        _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordUpdated(record))
+    }
+
+    suspend fun deleteMealRecord(record: MealRecord) {
+        mealRecordDao.delete(record)
+        _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordDeleted(record.date))
+    }
+
+    suspend fun deleteMealRecordById(id: Long) {
+        val record = mealRecordDao.getById(id)
+        if (record != null) {
+            mealRecordDao.deleteById(id)
+            _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordDeleted(record.date))
+        }
+    }
     
     // 查询操作
     suspend fun getMealRecordById(id: Long): MealRecord? = mealRecordDao.getById(id)
@@ -46,6 +69,7 @@ class MealRecordRepository(
     suspend fun insertMealRecordWithFoods(record: MealRecord, foodIds: List<Long>): Long {
         val recordId = mealRecordDao.insert(record)
         recordFoodDao.insertFoodsForRecord(recordId, foodIds)
+        _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordAdded(record))
         return recordId
     }
     
@@ -66,6 +90,7 @@ class MealRecordRepository(
         
         // 保存食物关联
         recordFoodDao.insertAll(recordFoods)
+        _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordAdded(record))
         return recordId
     }
     
@@ -104,5 +129,6 @@ class MealRecordRepository(
         
         // 保存新的食物关联
         recordFoodDao.insertAll(recordFoods)
+        _recordUpdates.emit(com.example.nutrilog.analysis.listener.RecordUpdate.RecordUpdated(record))
     }
 }

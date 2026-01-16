@@ -5,6 +5,7 @@ import com.example.nutrilog.shared.MealRecord
 import com.example.nutrilog.shared.NutritionFacts
 import com.example.nutrilog.shared.NutritionTarget
 import com.example.nutrilog.shared.NutritionTargetFactory
+import com.example.nutrilog.shared.Range
 
 data class DailyAnalysis(
     val date: String,
@@ -26,5 +27,24 @@ data class DailyAnalysis(
                 records = emptyList()
             )
         }
+    }
+
+    fun toSharedAnalysis(analysis:DailyAnalysis): com.example.nutrilog.shared.DailyAnalysis
+    {
+        return com.example.nutrilog.shared.DailyAnalysis(
+            date = analysis.date,
+            score = analysis.score,
+            nutrition = analysis.nutrition,
+            target = NutritionFacts(
+                calories = analysis.target.calories.min,
+                protein = analysis.target.protein.min,
+                carbs = analysis.target.carbs.min,
+                fat = analysis.target.fat.min,
+                sodium = analysis.target.sodium,                // 5克盐约等于2000mg钠
+                fiber = analysis.target.fiber,                    // 每日25克膳食纤维
+                sugar = analysis.target.sugar                   // 每日不超过50克添加糖
+            ),
+            records = analysis.records,
+        )
     }
 }

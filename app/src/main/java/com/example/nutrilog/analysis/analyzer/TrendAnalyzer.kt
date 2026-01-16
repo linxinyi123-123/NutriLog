@@ -63,7 +63,7 @@ class TrendAnalyzer {
      * 计算每日健康评分 (0-100分)
      * 基于卡路里、蛋白质、脂肪、碳水化合物等营养素的平衡性
      */
-    private fun calculateDailyHealthScore(nutrition: NutritionFacts): Double {
+    public fun calculateDailyHealthScore(nutrition: NutritionFacts): Double {
         var score = 100.0
 
         // 假设的营养目标值（可根据实际情况调整）

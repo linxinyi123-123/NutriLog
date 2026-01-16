@@ -93,7 +93,7 @@ fun NutriLogApp() {
                 HomeScreen(navController)
             }
             composable("analysis") {
-                AnalysisScreen(navController)
+                AnalysisScreen(navController, context)
             }
             composable("reports") {
                 ReportsScreen(navController)

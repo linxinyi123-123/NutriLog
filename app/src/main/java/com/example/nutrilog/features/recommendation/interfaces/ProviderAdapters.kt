@@ -29,6 +29,18 @@ class RecordProviderAdapter(
     override suspend fun getFoodVarietyCount(userId: Long, days: Int): Int {
         return recordProvider.getFoodVarietyCount(userId, days)
     }
+    // 添加缺失的方法
+    override suspend fun getUserRecordCount(userId: Long): Int {
+        // 这里需要实现获取用户记录总数的逻辑
+        // 选项1: 如果有recordProvider提供的方法
+       // return recordProvider.getUserRecordCount(userId)
+
+        // 选项2: 如果recordProvider没有这个方法，可以通过其他方法计算
+         return getUserRecords(userId, 365).size // 获取一年内的记录数
+
+        // 选项3: 先返回一个默认值，让编译通过
+        // return 0
+    }
 }
 
 /**

@@ -18,8 +18,8 @@ import com.example.nutrilog.features.recommendation.repository.ImprovementPlanRe
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import javax.inject.Inject
-class RecommendationServiceImpl @Inject constructor (
+
+class RecommendationServiceImpl (
     private val recordRepository: RecordRepository,
     private val nutritionAnalysisService: NutritionAnalysisService,
     private val goalRepository: GoalRepository,

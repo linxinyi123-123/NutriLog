@@ -3,6 +3,8 @@ package com.example.nutrilog.ui.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.coroutines.delay
@@ -84,6 +87,8 @@ data class DonutSlice(
 fun ChartContainer(
     modifier: Modifier = Modifier,
     title: String? = null,
+    legendEntries: List<Pair<String, Color>> = emptyList(),
+    chartHeight: Dp = 250.dp,
     chart: @Composable () -> Unit
 ) {
     Card(
@@ -106,13 +111,31 @@ fun ChartContainer(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(chartHeight)
             ) {
                 chart()
             }
             
             // 图例（如果需要）
-            ChartLegend()
+            ChartLegend(entries = legendEntries)
+        }
+    }
+}
+
+// 水平滚动包装器组件
+@Composable
+fun HorizontalScrollbarWrapper(content: @Composable () -> Unit) {
+    val state = rememberScrollState()
+    
+    // 使用Row实现水平滚动
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .horizontalScroll(state)
+    ) {
+        // 增加内容宽度，确保可以滚动
+        Box(modifier = Modifier.width(1000.dp)) {
+            content()
         }
     }
 }
@@ -166,11 +189,43 @@ fun NutritionPieChart(nutrition: NutritionFacts) {
         PieSlice("脂肪", nutrition.fat.toFloat(), AppColors.Fat)
     )
     
+    // 定义对话框状态
+    val showDialog = remember { mutableStateOf(false) }
+    val selectedSlice = remember { mutableStateOf<PieSlice?>(null) }
+    val total = slices.sumOf { it.value.toDouble() }.toFloat()
+    
     ChartContainer(
         modifier = Modifier.fillMaxWidth(),
-        title = "三大营养素比例"
+        title = "三大营养素比例",
+        legendEntries = slices.map { Pair(it.label, it.color) }
     ) {
-        SimplePieChart(slices = slices)
+        SimplePieChart(
+            slices = slices,
+            onClick = { slice ->
+                selectedSlice.value = slice
+                showDialog.value = true
+            }
+        )
+    }
+    
+    // 营养素详情对话框
+    if (showDialog.value && selectedSlice.value != null) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(text = "营养素详情") },
+            text = {
+                Column {
+                    Text(text = "营养素: ${selectedSlice.value?.label}")
+                    Text(text = "摄入量: ${selectedSlice.value?.value} 克")
+                    Text(text = "占比: ${((selectedSlice.value?.value ?: 0f) / total * 100).toInt()}%")
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showDialog.value = false }) {
+                    Text(text = "确定")
+                }
+            }
+        )
     }
 }
 
@@ -178,9 +233,43 @@ fun NutritionPieChart(nutrition: NutritionFacts) {
 @Composable
 fun SimplePieChart(
     slices: List<PieSlice>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (PieSlice) -> Unit = {}
 ) {
-    Canvas(modifier = modifier.fillMaxSize()) {
+    // 定义选中的扇形索引
+    val selectedIndex = remember { mutableStateOf(-1) }
+    
+    Canvas(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {offset ->
+                    val total = slices.sumOf { it.value.toDouble() }.toFloat()
+                    val center = Offset(size.width / 2f, size.height / 2f)
+                    val radius = minOf(size.width, size.height) * 0.35f
+                    
+                    // 计算点击位置与圆心的角度
+                    val dx = offset.x - center.x
+                    val dy = offset.y - center.y
+                    var angle = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
+                    if (angle < 0) angle += 360f
+                    
+                    // 从12点方向开始计算
+                    angle = (angle + 90) % 360
+                    
+                    // 查找点击的扇形
+                    var currentAngle = 0f
+                    slices.forEachIndexed { index, slice ->
+                        val sweepAngle = (slice.value / total) * 360f
+                        if (angle >= currentAngle && angle < currentAngle + sweepAngle) {
+                            selectedIndex.value = index
+                            onClick(slice)
+                        }
+                        currentAngle += sweepAngle
+                    }
+                }
+            }
+    ) {
         val total = slices.sumOf { it.value.toDouble() }.toFloat()
         var startAngle = -90f // 从12点方向开始
         val center = Offset(size.width / 2, size.height / 2)
@@ -189,8 +278,11 @@ fun SimplePieChart(
         
         // 避免除以零，当total为0时不绘制
         if (total > 0) {
-            slices.forEach { slice ->
+            slices.forEachIndexed { index, slice ->
                 val sweepAngle = (slice.value / total) * 360f
+                
+                // 如果是选中的扇形，稍微扩大半径
+                val currentRadius = if (index == selectedIndex.value) radius * 1.1f else radius
                 
                 // 绘制环形
                 drawArc(
@@ -198,14 +290,14 @@ fun SimplePieChart(
                     startAngle = startAngle,
                     sweepAngle = sweepAngle,
                     useCenter = false,
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = Size(radius * 2, radius * 2),
-                    style = Stroke(width = radius - innerRadius)
+                    topLeft = Offset(center.x - currentRadius, center.y - currentRadius),
+                    size = Size(currentRadius * 2, currentRadius * 2),
+                    style = Stroke(width = currentRadius - innerRadius)
                 )
                 
                 // 绘制标签线和标签
                 val labelAngle = startAngle + sweepAngle / 2
-                val labelRadius = radius + 20f
+                val labelRadius = currentRadius + 20f
                 val cosValue = cos(labelAngle * Math.PI / 180.0).toFloat()
                 val sinValue = sin(labelAngle * Math.PI / 180.0).toFloat()
                 val labelX = center.x + labelRadius * cosValue
@@ -214,8 +306,8 @@ fun SimplePieChart(
                 drawLine(
                     color = slice.color,
                     start = Offset(
-                        center.x + radius * cosValue,
-                        center.y + radius * sinValue
+                        center.x + currentRadius * cosValue,
+                        center.y + currentRadius * sinValue
                     ),
                     end = Offset(labelX, labelY),
                     strokeWidth = 2f
@@ -343,25 +435,25 @@ fun SimpleRadarChart(
         }
         
         // 绘制标签
-        dataPoints.forEachIndexed { index, point ->
-            val angle = 2f * Math.PI.toFloat() * index / pointCount
-            val labelRadius = radius * 1.1f
-            val x = center.x + labelRadius * cos(angle).toFloat()
-            val y = center.y + labelRadius * sin(angle).toFloat()
-            
-            drawContext.canvas.nativeCanvas.apply {
-                drawText(
-                    point.label,
-                    x,
-                    y,
-                    android.graphics.Paint().apply {
-                        color = android.graphics.Color.BLACK
-                        textSize = 14.0f
-                        textAlign = android.graphics.Paint.Align.CENTER
-                    }
-                )
+            dataPoints.forEachIndexed { index, point ->
+                val angle = 2f * Math.PI.toFloat() * index / pointCount
+                val labelRadius = radius * 1.1f
+                val x = center.x + labelRadius * cos(angle).toFloat()
+                val y = center.y + labelRadius * sin(angle).toFloat()
+                
+                drawContext.canvas.nativeCanvas.apply {
+                    drawText(
+                        point.label,
+                        x,
+                        y,
+                        android.graphics.Paint().apply {
+                            color = android.graphics.Color.BLACK
+                            textSize = 18.0f
+                            textAlign = android.graphics.Paint.Align.CENTER
+                        }
+                    )
+                }
             }
-        }
     }
 }
 
@@ -764,7 +856,11 @@ fun LineChart(
 
 // 健康评分趋势折线图
 @Composable
-fun TrendLineChart(trendData: TrendAnalysis) {
+fun TrendLineChart(trendData: com.example.nutrilog.analysis.analysis.TrendAnalysis) {
+    // 定义对话框状态
+    val showDialog = remember { mutableStateOf(false) }
+    val selectedPoint = remember { mutableStateOf<LineDataPoint?>(null) }
+    
     ChartContainer(
         modifier = Modifier.fillMaxWidth(),
         title = "健康评分趋势"
@@ -786,7 +882,29 @@ fun TrendLineChart(trendData: TrendAnalysis) {
             showGrid = true,
             onClick = { point ->
                 // 点击时显示详细信息
-                showDataPointDialog(point)
+                selectedPoint.value = point
+                showDialog.value = true
+            }
+        )
+    }
+    
+    // 数据点详情对话框
+    if (showDialog.value && selectedPoint.value != null) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(text = "数据详情") },
+            text = {
+                Column {
+                    Text(text = "日期: ${selectedPoint.value?.label}")
+                    Text(text = "健康评分: ${selectedPoint.value?.value}")
+                    Text(text = "卡路里: ${selectedPoint.value?.extraData?.get("calories")}")
+                    Text(text = "蛋白质: ${selectedPoint.value?.extraData?.get("protein")}")
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showDialog.value = false }) {
+                    Text(text = "确定")
+                }
             }
         )
     }
@@ -802,10 +920,11 @@ fun showDataPointDialog(point: LineDataPoint) {
 
 // 饮食时间热力图组件
 @Composable
-fun MealTimeHeatmap(records: List<MealRecord>) {
+fun MealTimeHeatmap(records: List<com.example.nutrilog.shared.MealRecord>) {
     ChartContainer(
         modifier = Modifier.fillMaxWidth(),
-        title = "饮食时间分布"
+        title = "饮食时间分布",
+        chartHeight = 350.dp // 增加高度，使热力图布满整个卡片
     ) {
         // 准备数据：24小时 x 7天
         val hourlyData = Array(7) { Array(24) { 0 } }
@@ -817,11 +936,14 @@ fun MealTimeHeatmap(records: List<MealRecord>) {
             hourlyData[dayOfWeek][hour]++
         }
         
-        Heatmap(
-            data = hourlyData,
-            dayLabels = listOf("一", "二", "三", "四", "五", "六", "日"),
-            hourLabels = (0..23).map { "$it" }
-        )
+        // 添加水平滚动功能
+        HorizontalScrollbarWrapper {
+            Heatmap(
+                data = hourlyData,
+                dayLabels = listOf("一", "二", "三", "四", "五", "六", "日"),
+                hourLabels = (0..23).map { "$it" }
+            )
+        }
     }
 }
 
@@ -903,7 +1025,7 @@ fun Heatmap(
 
 // 餐次分布环状图组件
 @Composable
-fun MealDistributionChart(records: List<MealRecord>) {
+fun MealDistributionChart(records: List<com.example.nutrilog.shared.MealRecord>) {
     val mealCounts = mapOf(
         "早餐" to records.count { it.mealType.name == "BREAKFAST" },
         "午餐" to records.count { it.mealType.name == "LUNCH" },
@@ -941,9 +1063,28 @@ fun DonutChart(
         val holeRadius = radius * holeSize
         
         var startAngle = -90f
-        val total = slices.sumOf { it.value.toDouble() }.toFloat()
+        // 过滤掉value为0的切片，避免绘制问题
+        val validSlices = slices.filter { it.value > 0 }
+        val total = validSlices.sumOf { it.value.toDouble() }.toFloat()
         
-        slices.forEach { slice ->
+        // 如果没有有效切片，显示提示信息
+        if (validSlices.isEmpty()) {
+            drawContext.canvas.nativeCanvas.apply {
+                drawText(
+                    "暂无数据",
+                    center.x,
+                    center.y,
+                    android.graphics.Paint().apply {
+                        color = android.graphics.Color.GRAY
+                        textSize = 24f
+                        textAlign = android.graphics.Paint.Align.CENTER
+                    }
+                )
+            }
+            return@Canvas
+        }
+        
+        validSlices.forEach { slice ->
             val sweepAngle = (slice.value / total) * 360f
             
             // 绘制外环

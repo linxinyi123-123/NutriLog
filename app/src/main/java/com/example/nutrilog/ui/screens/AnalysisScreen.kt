@@ -38,9 +38,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +55,7 @@ import com.example.nutrilog.shared.*
 import com.example.nutrilog.ui.theme.AppColors
 import com.example.nutrilog.ui.theme.AppShapes
 import com.example.nutrilog.ui.theme.AppTypography
+import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.features.recommendation.model.Recommendation
 import com.example.nutrilog.features.recommendation.model.RecommendationType
 import com.example.nutrilog.features.recommendation.model.Priority
@@ -73,22 +77,39 @@ sealed class AnalysisState {
 }
 
 // 分析模块 ViewModel
-class AnalysisViewModel(private val analysisService: com.example.nutrilog.analysis.service.LazyAnalysisService) : ViewModel() {
+class AnalysisViewModel(
+    private val analysisService: com.example.nutrilog.analysis.service.LazyAnalysisService,
+    private val recordRepository: com.example.nutrilog.data.repository.MealRecordRepository,
+    private val trendAnalyzer: com.example.nutrilog.analysis.analyzer.TrendAnalyzer,
+    private val varietyAnalyzer: com.example.nutrilog.analysis.analyzer.FoodVarietyAnalyzer
+) : ViewModel() {
     private val _analysisState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
     val analysisState: StateFlow<AnalysisState> = _analysisState.asStateFlow()
-    
+
     // 周趋势分析状态
     private val _weeklyTrendState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
     val weeklyTrendState: StateFlow<AnalysisState> = _weeklyTrendState.asStateFlow()
-    
+
+    // 趋势分析数据
+    private val _trendAnalysisState = MutableStateFlow<com.example.nutrilog.analysis.analysis.TrendAnalysis?>(null)
+    val trendAnalysisState: StateFlow<com.example.nutrilog.analysis.analysis.TrendAnalysis?> = _trendAnalysisState.asStateFlow()
+
     // 饮食规律分析状态
     private val _regularityState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
     val regularityState: StateFlow<AnalysisState> = _regularityState.asStateFlow()
-    
+
     // 饮食多样性分析状态
     private val _varietyState = MutableStateFlow<AnalysisState>(AnalysisState.Loading)
     val varietyState: StateFlow<AnalysisState> = _varietyState.asStateFlow()
-    
+
+    // 推荐数据状态
+    private val _recommendationsState = MutableStateFlow<List<com.example.nutrilog.features.recommendation.model.Recommendation>>(emptyList())
+    val recommendationsState: StateFlow<List<com.example.nutrilog.features.recommendation.model.Recommendation>> = _recommendationsState.asStateFlow()
+
+    // 改善计划状态
+    private val _improvementPlanState = MutableStateFlow<com.example.nutrilog.features.recommendation.model.improvement.ImprovementPlan?>(null)
+    val improvementPlanState: StateFlow<com.example.nutrilog.features.recommendation.model.improvement.ImprovementPlan?> = _improvementPlanState.asStateFlow()
+
     init {
         // 初始加载今天的数据
         viewModelScope.launch {
@@ -98,16 +119,20 @@ class AnalysisViewModel(private val analysisService: com.example.nutrilog.analys
             }
             // 加载周趋势分析
             getWeeklyTrendAnalysis(today)
+            // 加载推荐数据
+            getRecommendations()
+            // 加载改善计划
+            getImprovementPlan()
         }
     }
-    
+
     fun getAnalysisForDate(date: String): Flow<AnalysisState> {
         return flow {
             emit(AnalysisState.Loading)
             try {
                 // 调用真实的分析服务
                 val analysis = analysisService.getDailyAnalysis(date)
-                
+
                 if (analysis.records.isEmpty()) {
                     emit(AnalysisState.Empty)
                 } else {
@@ -118,7 +143,7 @@ class AnalysisViewModel(private val analysisService: com.example.nutrilog.analys
             }
         }
     }
-    
+
     fun refreshAnalysis(date: String) {
         viewModelScope.launch {
             getAnalysisForDate(date).collect {
@@ -126,28 +151,127 @@ class AnalysisViewModel(private val analysisService: com.example.nutrilog.analys
             }
             // 刷新周趋势分析
             getWeeklyTrendAnalysis(date)
+            // 刷新推荐数据
+            getRecommendations()
+            // 刷新改善计划
+            getImprovementPlan()
         }
     }
-    
+
     // 获取周趋势分析
     private fun getWeeklyTrendAnalysis(endDate: String) {
         viewModelScope.launch {
             _weeklyTrendState.value = AnalysisState.Loading
             try {
-                // 这里需要实现周趋势分析的获取逻辑
-                // 暂时使用模拟数据
-                _weeklyTrendState.value = AnalysisState.Success(getMockDailyAnalysis(endDate))
+                // 获取过去7天的日期
+                val dates = getPast7Days(endDate)
+                // 获取过去7天的记录
+                val records = mutableListOf<com.example.nutrilog.shared.MealRecord>()
+                dates.forEach {
+                    val analysis = analysisService.getDailyAnalysis(it)
+                    records.addAll(analysis.records)
+                }
+                // 分析周趋势
+                val trendAnalysis = trendAnalyzer.analyzeWeeklyTrend(records)
+                _trendAnalysisState.value = trendAnalysis
+                _weeklyTrendState.value = AnalysisState.Success(DailyAnalysis(
+                    date = endDate,
+                    score = HealthScore(
+                        total = trendAnalysis.dailyPoints.lastOrNull()?.score ?: 0.0,
+                        breakdown = mapOf(
+                            "calories" to 90.0,
+                            "macros" to 85.0,
+                            "micros" to 78.0,
+                            "regularity" to 92.0,
+                            "variety" to 88.0
+                        ),
+                        feedback = trendAnalysis.insights
+                    ),
+                    nutrition = NutritionFacts(
+                        calories = trendAnalysis.dailyPoints.sumOf { it.nutrition.calories } / trendAnalysis.dailyPoints.size,
+                        protein = trendAnalysis.dailyPoints.sumOf { it.nutrition.protein } / trendAnalysis.dailyPoints.size,
+                        carbs = trendAnalysis.dailyPoints.sumOf { it.nutrition.carbs } / trendAnalysis.dailyPoints.size,
+                        fat = trendAnalysis.dailyPoints.sumOf { it.nutrition.fat } / trendAnalysis.dailyPoints.size,
+                        fiber = trendAnalysis.dailyPoints.sumOf { it.nutrition.fiber ?: 0.0 } / trendAnalysis.dailyPoints.size,
+                        sugar = trendAnalysis.dailyPoints.sumOf { it.nutrition.sugar ?: 0.0 } / trendAnalysis.dailyPoints.size,
+                    ),
+                    target = NutritionFacts(
+                        calories = 2000.0,
+                        protein = 75.0,
+                        carbs = 250.0,
+                        fat = 65.0,
+                        fiber = 30.0,
+                        sugar = 50.0,
+                    ),
+                    records = records
+                ))
             } catch (e: Exception) {
                 _weeklyTrendState.value = AnalysisState.Error(e.message ?: "未知错误")
             }
         }
     }
-    
+
+    // 获取餐次规律性分析
+    private fun getMealRegularityAnalysis(records: List<com.example.nutrilog.shared.MealRecord>) {
+        viewModelScope.launch {
+            try {
+                val patternAnalyzer = com.example.nutrilog.analysis.analyzer.MealPatternAnalyzer()
+                val regularityAnalysis = patternAnalyzer.analyzeMealRegularity(records)
+                // 可以将规律性分析结果存储在新的状态中
+                // _regularityAnalysisState.value = regularityAnalysis
+            } catch (e: Exception) {
+                // 处理异常
+            }
+        }
+    }
+
+    // 获取推荐数据
+    private fun getRecommendations() {
+        viewModelScope.launch {
+            try {
+                // 目前没有推荐服务，使用模拟数据
+                _recommendationsState.value = getMockRecommendations()
+            } catch (e: Exception) {
+                // 如果获取失败，使用模拟数据
+                _recommendationsState.value = getMockRecommendations()
+            }
+        }
+    }
+
+    // 获取改善计划
+    private fun getImprovementPlan() {
+        viewModelScope.launch {
+            try {
+                // 目前没有推荐服务，使用模拟数据
+                _improvementPlanState.value = getMockImprovementPlan()
+            } catch (e: Exception) {
+                // 如果获取失败，使用模拟数据
+                _improvementPlanState.value = getMockImprovementPlan()
+            }
+        }
+    }
+
+    // 获取过去7天的日期
+    private fun getPast7Days(endDate: String): List<String> {
+        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val end = formatter.parse(endDate)
+        val dates = mutableListOf<String>()
+        if (end != null) {
+            for (i in 6 downTo 0) {
+                val calendar = java.util.Calendar.getInstance()
+                calendar.time = end
+                calendar.add(java.util.Calendar.DAY_OF_MONTH, -i)
+                dates.add(formatter.format(calendar.time))
+            }
+        }
+        return dates
+    }
+
     fun getTodayDate(): String {
         val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
         return formatter.format(java.util.Date())
     }
-    
+
     private fun getMockDailyAnalysis(date: String): DailyAnalysis {
         return DailyAnalysis(
             date = date,
@@ -299,7 +423,10 @@ fun exportAnalysisData(analysis: DailyAnalysis, context: android.content.Context
 fun AnalysisScreen(navController: NavController, context: android.content.Context) {
     // 使用AppModule获取分析服务和ViewModel
     val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
-    val viewModel = remember { AnalysisViewModel(analysisService) }
+    val recordRepository = com.example.nutrilog.di.AppModule.provideMealRecordRepository(context)
+    val trendAnalyzer = com.example.nutrilog.di.AppModule.provideTrendAnalyzer()
+    val varietyAnalyzer = com.example.nutrilog.di.AppModule.provideFoodVarietyAnalyzer()
+    val viewModel = remember { AnalysisViewModel(analysisService, recordRepository, trendAnalyzer, varietyAnalyzer) }
 
     // 日历选择器状态
     val selectedDate = remember { mutableStateOf(viewModel.getTodayDate()) }
@@ -355,26 +482,29 @@ fun AnalysisScreenWithData(
 ) {
     // 使用AppModule获取分析服务和ViewModel
     val analysisService = com.example.nutrilog.di.AppModule.provideLazyAnalysisService(context)
-    val viewModel = remember { AnalysisViewModel(analysisService) }
+    val recordRepository = com.example.nutrilog.di.AppModule.provideMealRecordRepository(context)
+    val trendAnalyzer = com.example.nutrilog.di.AppModule.provideTrendAnalyzer()
+    val varietyAnalyzer = com.example.nutrilog.di.AppModule.provideFoodVarietyAnalyzer()
+    val viewModel = remember { AnalysisViewModel(analysisService, recordRepository, trendAnalyzer, varietyAnalyzer) }
     val analysisState by viewModel.getAnalysisForDate(date).collectAsState(initial = AnalysisState.Loading)
-    
+
     when (analysisState) {
         is AnalysisState.Loading -> {
             LoadingView(message = "正在分析营养数据...")
         }
-        
+
         is AnalysisState.Success -> {
             val analysis = (analysisState as AnalysisState.Success).analysis
             AnalysisDetailView(analysis = analysis, viewModel = viewModel)
         }
-        
+
         is AnalysisState.Error -> {
             ErrorView(
                 message = "分析数据时出错",
                 onRetry = { viewModel.refreshAnalysis(date) }
             )
         }
-        
+
         is AnalysisState.Empty -> {
             EmptyState(
                 icon = Icons.Default.Assessment,
@@ -523,9 +653,9 @@ fun AnalysisTopBar(
                     style = AppTypography.h2,
                     color = AppColors.OnSurface
                 )
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 // 日期选择器
                 DateSelector(
                     selectedDate = selectedDate,
@@ -591,7 +721,7 @@ fun AnalysisContent(
 ) {
     val analysisState = viewModel.analysisState.collectAsState().value
     val weeklyTrendState = viewModel.weeklyTrendState.collectAsState().value
-    
+
     Box(modifier = modifier.fillMaxSize()) {
         when (analysisState) {
             is AnalysisState.Loading -> {
@@ -650,9 +780,42 @@ fun EmptyAnalysisView(onRefresh: () -> Unit) {
 @Composable
 fun AnalysisDetailView(analysis: DailyAnalysis, viewModel: AnalysisViewModel) {
     val scrollState = rememberScrollState()
-    // 模拟获取推荐数据
-    val recommendations = getMockRecommendations()
-    
+    // 从ViewModel获取推荐数据
+    val recommendations by viewModel.recommendationsState.collectAsState()
+    // 从ViewModel获取改善计划
+    val improvementPlan by viewModel.improvementPlanState.collectAsState()
+    // 从ViewModel获取趋势分析数据
+    val trendAnalysis by viewModel.trendAnalysisState.collectAsState()
+    // 计算食物多样性数据
+    val varietyData = remember(analysis.records) {
+        if (analysis.records.isNotEmpty()) {
+            // 简单计算食物类别分布
+            val foodVarietyAnalyzer = com.example.nutrilog.analysis.analyzer.FoodVarietyAnalyzer()
+            val varietyAnalysis = foodVarietyAnalyzer.analyzeVariety(analysis.records)
+            // 将FoodCategory枚举转换为中文名称
+            varietyAnalysis.coverage.mapKeys { (category, _) ->
+                when (category) {
+                    com.example.nutrilog.shared.FoodCategory.GRAINS -> "谷薯类"
+                    com.example.nutrilog.shared.FoodCategory.VEGETABLES -> "蔬菜类"
+                    com.example.nutrilog.shared.FoodCategory.FRUITS -> "水果类"
+                    com.example.nutrilog.shared.FoodCategory.PROTEIN -> "蛋白质类"
+                    com.example.nutrilog.shared.FoodCategory.DAIRY -> "奶制品类"
+                    else -> "其他"
+                }
+            }
+        } else {
+            // 如果没有记录，使用默认数据
+            mapOf(
+                "谷薯类" to 30.0,
+                "蔬菜类" to 25.0,
+                "水果类" to 15.0,
+                "蛋白质类" to 20.0,
+                "奶制品" to 5.0,
+                "油脂类" to 5.0
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -661,55 +824,59 @@ fun AnalysisDetailView(analysis: DailyAnalysis, viewModel: AnalysisViewModel) {
     ) {
         // 1. 健康评分概览
         HealthScoreOverview(score = analysis.score)
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // 2. 营养环形图
         com.example.nutrilog.ui.components.NutritionPieChart(nutrition = analysis.nutrition)
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // 3. 营养素达成雷达图
         com.example.nutrilog.ui.components.NutrientRadarChart(
             actual = analysis.nutrition,
             target = analysis.target
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
-        // 4. 周趋势分析卡片
-        TrendAnalysisCard(viewModel = viewModel)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+
+//        // 4. 健康评分趋势折线图
+//        trendAnalysis?.let {
+//            com.example.nutrilog.ui.components.TrendLineChart(trendData = it)
+//            Spacer(modifier = Modifier.height(24.dp))
+//        }
+
         // 5. 饮食规律性分析卡片
-        RegularityAnalysisCard()
-        
+        RegularityAnalysisCard(records = analysis.records)
+
         Spacer(modifier = Modifier.height(24.dp))
         
+        // 5.1 餐次规律性详情卡片
+        MealRegularityDetailCard(records = analysis.records)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // 6. 饮食多样性分析卡片
-        VarietyAnalysisCard()
+        VarietyAnalysisCard(varietyData = varietyData)
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // 7. 食物类别分布柱状图
-        val mockCategoryData = mapOf(
-            "谷薯类" to 30.0,
-            "蔬菜类" to 25.0,
-            "水果类" to 15.0,
-            "蛋白质类" to 20.0,
-            "奶制品" to 5.0,
-            "油脂类" to 5.0
-        )
-        com.example.nutrilog.ui.components.CategoryBarChart(varietyData = mockCategoryData)
-        
+        // 6.1 食物多样性详情卡片
+        FoodVarietyDetailCard(records = analysis.records)
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
+//        // 7. 饮食时间热力图
+//        if (analysis.records.isNotEmpty()) {
+//            com.example.nutrilog.ui.components.MealTimeHeatmap(records = analysis.records)
+//            Spacer(modifier = Modifier.height(24.dp))
+//        }
+
         // 8. 改进建议
         ImprovementSuggestions(suggestions = analysis.score.feedback)
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // 9. 个性化推荐
         RecommendationsSection(
             recommendations = recommendations,
@@ -718,22 +885,47 @@ fun AnalysisDetailView(analysis: DailyAnalysis, viewModel: AnalysisViewModel) {
                 println("Recommendation clicked: ${recommendation.title}")
             }
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // 10. 改善计划
-        Text(
-            text = "改善计划",
-            style = AppTypography.h2,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        ImprovementPlanView(plan = getMockImprovementPlan())
+        improvementPlan?.let {
+            Text(
+                text = "改善计划",
+                style = AppTypography.h2,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            ImprovementPlanView(plan = it)
+        }
     }
 }
 
-// 周趋势分析卡片
+
+// 饮食规律性分析卡片
 @Composable
-fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
+fun RegularityAnalysisCard(records: List<com.example.nutrilog.shared.MealRecord> = emptyList()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.large,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+            // 使用餐次分布环状图展示饮食规律性
+            com.example.nutrilog.ui.components.MealDistributionChart(records = records)
+        }
+}
+
+// 餐次规律性分析详情卡片
+@Composable
+fun MealRegularityDetailCard(records: List<com.example.nutrilog.shared.MealRecord>) {
+    val regularityAnalysis = remember(records) {
+        if (records.isNotEmpty()) {
+            val patternAnalyzer = com.example.nutrilog.analysis.analyzer.MealPatternAnalyzer()
+            patternAnalyzer.analyzeMealRegularity(records)
+        } else {
+            null
+        }
+    }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = AppShapes.large,
@@ -741,41 +933,51 @@ fun TrendAnalysisCard(viewModel: AnalysisViewModel) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "周趋势分析",
+                text = "餐次规律性分析",
                 style = AppTypography.h2,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             
-            val trendState = viewModel.weeklyTrendState.collectAsState().value
-            when (trendState) {
-                is AnalysisState.Loading -> {
-                    LoadingView(message = "正在加载趋势分析...")
-                }
-                is AnalysisState.Success -> {
-                    // 这里可以添加周趋势图表展示
-                    PlaceholderView("周趋势图表")
-                }
-                is AnalysisState.Error -> {
-                    ErrorView(
-                        message = (trendState as AnalysisState.Error).message,
-                        onRetry = { viewModel.refreshAnalysis(viewModel.getTodayDate()) }
+            regularityAnalysis?.let {
+                // 展示各餐次的规律性评分
+                Column {
+                    Text(text = "早餐规律性评分: ${it.breakfastScore.toInt()}/100")
+                    Text(text = "午餐规律性评分: ${it.lunchScore.toInt()}/100")
+                    Text(text = "晚餐规律性评分: ${it.dinnerScore.toInt()}/100")
+                    Text(text = "夜宵频率: ${(it.lateNightFrequency * 100).toInt()}%")
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text(
+                        text = "规律性建议",
+                        style = AppTypography.body1.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
+                    
+                    it.suggestions.forEachIndexed {
+                        index, suggestion ->
+                        Text(text = "${index + 1}. $suggestion")
+                    }
                 }
-                else -> {
-                    EmptyState(
-                        icon = Icons.Default.Assessment,
-                        title = "暂无趋势数据",
-                        message = "请记录至少一周的数据以查看趋势分析"
-                    )
-                }
+            } ?: run {
+                Text(text = "暂无足够数据进行规律性分析")
             }
         }
     }
 }
 
-// 饮食规律性分析卡片
+// 食物多样性详情卡片
 @Composable
-fun RegularityAnalysisCard() {
+fun FoodVarietyDetailCard(records: List<com.example.nutrilog.shared.MealRecord>) {
+    val varietyAnalysis = remember(records) {
+        if (records.isNotEmpty()) {
+            val varietyAnalyzer = com.example.nutrilog.analysis.analyzer.FoodVarietyAnalyzer()
+            varietyAnalyzer.analyzeVariety(records)
+        } else {
+            null
+        }
+    }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = AppShapes.large,
@@ -783,35 +985,57 @@ fun RegularityAnalysisCard() {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "饮食规律性分析",
+                text = "食物多样性分析",
                 style = AppTypography.h2,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             
-            // 这里可以添加饮食规律性分析内容
-            PlaceholderView("饮食规律性图表")
+            varietyAnalysis?.let {
+                // 展示多样性评分
+                Text(text = "多样性评分: ${it.totalScore.toInt()}/100")
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = "各食物类别覆盖率",
+                    style = AppTypography.body1.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                it.coverage.forEach {
+                    (category, coverage) ->
+                    Text(text = "${category.name}: ${coverage.toInt()}%")
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = "多样性建议",
+                    style = AppTypography.body1.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                it.suggestions.forEachIndexed {
+                    index, suggestion ->
+                    Text(text = "${index + 1}. $suggestion")
+                }
+            } ?: run {
+                Text(text = "暂无足够数据进行多样性分析")
+            }
         }
     }
 }
 
 // 饮食多样性分析卡片
 @Composable
-fun VarietyAnalysisCard() {
+fun VarietyAnalysisCard(varietyData: Map<String, Double> = emptyMap()) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = AppShapes.large,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "饮食多样性分析",
-                style = AppTypography.h2,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            
-            // 这里可以添加饮食多样性分析内容
-            PlaceholderView("饮食多样性图表")
-        }
+            // 使用类别柱状图展示饮食多样性
+            com.example.nutrilog.ui.components.CategoryBarChart(varietyData = varietyData)
     }
 }
 
@@ -894,9 +1118,9 @@ fun HealthScoreOverview(score: HealthScore) {
                 style = AppTypography.h2,
                 color = AppColors.OnSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 大号分数显示
             Text(
                 text = "${score.total.toInt()}",
@@ -907,18 +1131,18 @@ fun HealthScoreOverview(score: HealthScore) {
                 ),
                 color = getScoreColor(score.total.toInt())
             )
-            
+
             Spacer(modifier = Modifier.height(4.dp))
-            
+
             // 分数描述
             Text(
                 text = getScoreDescription(score.total.toInt()),
                 style = AppTypography.body1,
                 color = AppColors.OnSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // 各维度分数
             ScoreBreakdown(breakdown = score.breakdown)
         }
@@ -960,7 +1184,7 @@ fun ScoreBreakdownItem(
             style = AppTypography.body1,
             color = AppColors.OnSurface
         )
-        
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             // 分数
             Text(
@@ -968,25 +1192,25 @@ fun ScoreBreakdownItem(
                 style = AppTypography.body1.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                 color = getScoreColor(score.toInt())
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             // 迷你进度条
             Box(
-            modifier = Modifier
-                .width(100.dp)
-                .height(6.dp)
-                .clip(shape = RoundedCornerShape(3.dp))
-                .background(AppColors.Background)
-        ) {
-            Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .width(((score / 100.0).coerceIn(0.0, 1.0) * 100.0).dp)
+                    .width(100.dp)
+                    .height(6.dp)
                     .clip(shape = RoundedCornerShape(3.dp))
-                    .background(getScoreColor(score.toInt()))
-            )
-        }
+                    .background(AppColors.Background)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(((score / 100.0).coerceIn(0.0, 1.0) * 100.0).dp)
+                        .clip(shape = RoundedCornerShape(3.dp))
+                        .background(getScoreColor(score.toInt()))
+                )
+            }
         }
     }
 }
@@ -1076,7 +1300,7 @@ fun DatePickerDialog(
                         },
                         modifier = Modifier.width(120.dp),
 
-                    )
+                        )
                 }
 
                 // 月份选择
@@ -1090,7 +1314,7 @@ fun DatePickerDialog(
                         },
                         modifier = Modifier.width(120.dp),
 
-                    )
+                        )
                 }
 
                 // 日选择
@@ -1104,7 +1328,7 @@ fun DatePickerDialog(
                         },
                         modifier = Modifier.width(120.dp),
 
-                    )
+                        )
                 }
             }
         },
@@ -1138,9 +1362,24 @@ class DatePickerState(
     fun show() {
         isVisible = true
     }
-    
+
     fun dismiss() {
         isVisible = false
+    }
+}
+
+// AnalysisScreen预览函数
+@Preview(showBackground = true, device = "id:pixel_5")
+@Composable
+fun AnalysisScreenPreview() {
+    val context = LocalContext.current
+    
+    // 使用应用主题包装预览
+    com.example.nutrilog.ui.theme.NutriLogTheme {
+        AnalysisScreen(
+            navController = NavHostController(context),
+            context = context
+        )
     }
 }
 
@@ -1177,7 +1416,7 @@ fun PriorityBadge(priority: Priority) {
         Priority.MEDIUM -> "中"
         Priority.LOW -> "低"
     }
-    
+
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
@@ -1224,9 +1463,9 @@ fun RecommendationCard(
                     tint = getPriorityColor(recommendation.priority)
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             // 内容
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -1234,9 +1473,9 @@ fun RecommendationCard(
                     style = AppTypography.h2.copy(fontSize = 16.sp),
                     color = AppColors.OnSurface
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = recommendation.description,
                     style = AppTypography.body1,
@@ -1245,14 +1484,14 @@ fun RecommendationCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             // 优先级标签
             PriorityBadge(priority = recommendation.priority)
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             // 箭头
             Icon(
                 Icons.Default.ChevronRight,
@@ -1275,12 +1514,12 @@ fun RecommendationsSection(
             style = AppTypography.h2,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             recommendations.forEach {
-                recommendation ->
+                    recommendation ->
                 RecommendationCard(
                     recommendation = recommendation,
                     onClick = { onRecommendationClick(recommendation) }
@@ -1354,20 +1593,20 @@ fun TaskItem(task: com.example.nutrilog.features.recommendation.model.improvemen
                 checkedColor = AppColors.Primary
             )
         )
-        
+
         Spacer(modifier = Modifier.width(12.dp))
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = task.title,
                 style = AppTypography.body1.copy(
-                    textDecoration = if (task.completed) TextDecoration.LineThrough 
-                                    else TextDecoration.None
+                    textDecoration = if (task.completed) TextDecoration.LineThrough
+                    else TextDecoration.None
                 ),
-                color = if (task.completed) AppColors.OnSurfaceVariant 
-                       else AppColors.OnSurface
+                color = if (task.completed) AppColors.OnSurfaceVariant
+                else AppColors.OnSurface
             )
-            
+
             if (task.description.isNotEmpty()) {
                 Text(
                     text = task.description,
@@ -1394,15 +1633,15 @@ fun NextMilestoneCard(milestone: com.example.nutrilog.features.recommendation.mo
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             Text(
-                    text = milestone.title,
-                    style = AppTypography.body1.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-                Text(
-                    text = milestone.description,
-                    style = AppTypography.body1,
-                    color = AppColors.OnSurfaceVariant
-                )
+                text = milestone.title,
+                style = AppTypography.body1.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = milestone.description,
+                style = AppTypography.body1,
+                color = AppColors.OnSurfaceVariant
+            )
             if (milestone.rewardPoints > 0) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1506,23 +1745,23 @@ fun ImprovementPlanView(plan: com.example.nutrilog.features.recommendation.model
                         style = AppTypography.h2,
                         color = AppColors.OnSurface
                     )
-                    
+
                     Text(
-                            text = "第${plan.getDaysPassed()}天 / 共${plan.duration}天",
-                            style = AppTypography.body1,
-                            color = AppColors.OnSurfaceVariant
-                        )
+                        text = "第${plan.getDaysPassed()}天 / 共${plan.duration}天",
+                        style = AppTypography.body1,
+                        color = AppColors.OnSurfaceVariant
+                    )
                 }
-                
+
                 Text(
                     text = "${(plan.progress * 100).toInt()}%",
                     style = AppTypography.h2.copy(fontSize = 28.sp),
                     color = getProgressColor((plan.progress * 100).toInt())
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // 进度条
             LinearProgressIndicator(
                 progress = plan.progress,
@@ -1532,9 +1771,9 @@ fun ImprovementPlanView(plan: com.example.nutrilog.features.recommendation.model
                 color = getProgressColor((plan.progress * 100).toInt()),
                 trackColor = AppColors.Background
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // 今日任务 - 从当前周计划中获取
             val currentWeekPlan = plan.weeklyPlans.firstOrNull { it.weekNumber == plan.currentWeek }
             if (currentWeekPlan != null && currentWeekPlan.dailyTasks.isNotEmpty()) {
@@ -1544,13 +1783,13 @@ fun ImprovementPlanView(plan: com.example.nutrilog.features.recommendation.model
                         style = AppTypography.h2.copy(fontSize = 18.sp),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    
+
                     currentWeekPlan.dailyTasks.forEach { task ->
                         TaskItem(task = task)
                     }
                 }
             }
-            
+
             // 下一个里程碑
             val nextMilestone = plan.milestones.firstOrNull { !it.achieved }
             nextMilestone?.let {

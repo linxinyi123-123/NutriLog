@@ -34,6 +34,12 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
         com.example.nutrilog.di.AppModule.provideHomeViewModel(context)
     }
     
+    // 收集Flow数据
+    val userState = viewModel.user.collectAsState()
+    val todaySummaryState = viewModel.todaySummary.collectAsState()
+    val weeklyTrendState = viewModel.weeklyTrend.collectAsState()
+    val recentMealsState = viewModel.recentMeals.collectAsState()
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,30 +69,25 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
                 )
         ) {
             // 1. 欢迎区域
-            WelcomeSection(user = viewModel.user)
+            WelcomeSection(user = userState.value)
             
             Spacer(modifier = Modifier.height(20.dp))
             
             // 2. 今日摘要卡片
             TodaySummaryCard(
-                summary = viewModel.todaySummary,
-                onClick = { navController.navigate("today_detail") }
+                summary = todaySummaryState.value,
+                user = userState.value,
+                onClick = { navController.navigate("analysis") }
             )
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            // 3. 快速操作按钮
-            QuickActionsRow(navController = navController)
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
             // 4. 健康趋势卡片
-            HealthTrendCard(trend = viewModel.weeklyTrend)
+            HealthTrendCard(trend = weeklyTrendState.value)
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            // 5. 最近饮食记录 - 使用Flow收集真实数据
-            val recentMealsState = viewModel.recentMeals.collectAsState()
+            // 5. 最近饮食记录
             RecentMealsSection(meals = recentMealsState.value)
         }
     }
@@ -268,48 +269,7 @@ private fun HomeScreenPreview() {
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            // 3. 快速操作按钮模拟
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "快速操作",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        QuickActionButton(
-                            icon = Icons.Filled.AddCircle,
-                            label = "添加记录",
-                            onClick = {}
-                        )
-                        QuickActionButton(
-                            icon = Icons.Outlined.Assessment,
-                            label = "查看趋势",
-                            onClick = {}
-                        )
-                        QuickActionButton(
-                            icon = Icons.Outlined.CalendarToday,
-                            label = "日历",
-                            onClick = {}
-                        )
-                        QuickActionButton(
-                            icon = Icons.Outlined.Description,
-                            label = "营养建议",
-                            onClick = {}
-                        )
-                    }
-                }
-            }
             
             Spacer(modifier = Modifier.height(20.dp))
             
@@ -328,15 +288,7 @@ private fun HomeScreenPreview() {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // 简化的趋势图表
-                    Column {
-                        Text(text = "过去7天的营养摄入趋势", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "卡路里: 1950 kcal/天", style = MaterialTheme.typography.bodyMedium)
-                        Text(text = "蛋白质: 110 g/天", style = MaterialTheme.typography.bodyMedium)
-                        Text(text = "碳水: 240 g/天", style = MaterialTheme.typography.bodyMedium)
-                        Text(text = "脂肪: 68 g/天", style = MaterialTheme.typography.bodyMedium)
-                    }
+
                 }
             }
             

@@ -1,5 +1,6 @@
 package com.example.nutrilog.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -694,21 +695,35 @@ fun DateSelector(
     onDateChange: (String) -> Unit,
     onCalendarClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.clickable { onCalendarClick() },
-        verticalAlignment = Alignment.CenterVertically
+    OutlinedButton(
+        onClick = onCalendarClick,
+        modifier = Modifier
+            .wrapContentWidth()
+            .height(40.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = AppColors.Primary
+        ),
+        border = BorderStroke(1.dp, AppColors.Primary)
     ) {
-        Text(
-            text = selectedDate,
-            style = AppTypography.body1,
-            color = AppColors.OnSurfaceVariant
-        )
-        Icon(
-            imageVector = androidx.compose.material.icons.Icons.Default.CalendarMonth,
-            contentDescription = "选择日期",
-            modifier = Modifier.size(16.dp),
-            tint = AppColors.OnSurfaceVariant
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        ) {
+            Text(
+                text = selectedDate,
+                style = AppTypography.body1,
+                color = AppColors.OnSurface
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.CalendarMonth,
+                contentDescription = "选择日期",
+                modifier = Modifier.size(18.dp),
+                tint = AppColors.Primary
+            )
+        }
     }
 }
 
@@ -1248,123 +1263,150 @@ fun getScoreColor(score: Int): androidx.compose.ui.graphics.Color {
     }
 }
 
-// 日期选择器状态（简化实现）
-@Composable
-fun rememberDatePickerState(): DatePickerState {
-    return remember {
-        DatePickerState(false)
-    }
-}
-
-// 日期选择器对话框组件
+// 日期选择器状态
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerDialog(
     date: String,
     onDateSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // 将字符串日期转换为LocalDate
     val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
     val selectedLocalDate = try {
         val parsedDate = dateFormat.parse(date)
-        if (parsedDate != null) {
-            java.time.LocalDate.ofInstant(parsedDate.toInstant(), java.time.ZoneId.systemDefault())
-        } else {
-            java.time.LocalDate.now()
-        }
+        parsedDate?.let {
+            java.time.LocalDate.ofInstant(it.toInstant(), java.time.ZoneId.systemDefault())
+        } ?: java.time.LocalDate.now()
     } catch (e: Exception) {
         java.time.LocalDate.now()
     }
 
-    // 使用Compose的状态管理
-    val selectedYear = remember { mutableIntStateOf(selectedLocalDate.year) }
-    val selectedMonth = remember { mutableIntStateOf(selectedLocalDate.monthValue - 1) } // DatePicker使用0-11表示月份
-    val selectedDay = remember { mutableIntStateOf(selectedLocalDate.dayOfMonth) }
+    val datePickerState = androidx.compose.material3.rememberDatePickerState(
+        initialSelectedDateMillis = selectedLocalDate
+            .atStartOfDay(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    )
 
-    // 简单的日期选择器UI，使用数字输入框
-    androidx.compose.material3.AlertDialog(
+    androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(text = "选择日期")
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                // 年份选择
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "年份:")
-                    OutlinedTextField(
-                        value = selectedYear.intValue.toString(),
-                        onValueChange = { value ->
-                            val year = value.toIntOrNull() ?: selectedYear.intValue
-                            selectedYear.intValue = year.coerceIn(1900, 2100)
-                        },
-                        modifier = Modifier.width(120.dp),
-
-                        )
-                }
-
-                // 月份选择
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "月份:")
-                    OutlinedTextField(
-                        value = (selectedMonth.intValue + 1).toString(), // 显示1-12
-                        onValueChange = { value ->
-                            val month = value.toIntOrNull() ?: (selectedMonth.intValue + 1)
-                            selectedMonth.intValue = (month.coerceIn(1, 12) - 1) // 转换为0-11
-                        },
-                        modifier = Modifier.width(120.dp),
-
-                        )
-                }
-
-                // 日选择
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "日:")
-                    OutlinedTextField(
-                        value = selectedDay.intValue.toString(),
-                        onValueChange = { value ->
-                            val day = value.toIntOrNull() ?: selectedDay.intValue
-                            selectedDay.intValue = day.coerceIn(1, 31)
-                        },
-                        modifier = Modifier.width(120.dp),
-
-                        )
-                }
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                val formattedDate = String.format(
-                    java.util.Locale.getDefault(),
-                    "%04d-%02d-%02d",
-                    selectedYear.intValue,
-                    selectedMonth.intValue + 1, // 转换回1-12表示月份
-                    selectedDay.intValue
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false, // 关键：不使用平台默认宽度
+            decorFitsSystemWindows = true
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 24.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                // 自定义标题
+                Text(
+                    text = "选择日期",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
-                onDateSelected(formattedDate)
-                onDismiss()
-            }) {
-                Text(text = "确定")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text(text = "取消")
+
+                // DatePicker - 确保有足够空间
+                androidx.compose.material3.DatePicker(
+                    state = datePickerState,
+                    title = null, // 隐藏默认标题
+                    showModeToggle = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(450.dp), // 确保足够高度
+                    colors = androidx.compose.material3.DatePickerDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        headlineContentColor = MaterialTheme.colorScheme.onSurface,
+                        weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        yearContentColor = MaterialTheme.colorScheme.onSurface,
+                        currentYearContentColor = MaterialTheme.colorScheme.primary,
+                        selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedYearContainerColor = MaterialTheme.colorScheme.primary,
+                        dayContentColor = MaterialTheme.colorScheme.onSurface,
+//                        currentDayContentColor = MaterialTheme.colorScheme.onSurface,
+                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                        disabledDayContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        todayContentColor = MaterialTheme.colorScheme.primary,
+                        todayDateBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 按钮区域
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text("取消")
+                    }
+
+                    Button(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let {
+                                val selectedDate = java.time.Instant.ofEpochMilli(it)
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toLocalDate()
+                                val formattedDate = String.format(
+                                    java.util.Locale.getDefault(),
+                                    "%04d-%02d-%02d",
+                                    selectedDate.year,
+                                    selectedDate.monthValue,
+                                    selectedDate.dayOfMonth
+                                )
+                                onDateSelected(formattedDate)
+                                onDismiss()
+                            }
+                        }
+                    ) {
+                        Text("确定")
+                    }
+                }
             }
         }
-    )
+    }
 }
 
-// 日期选择器状态类（简化实现）
-class DatePickerState(
-    var isVisible: Boolean
-) {
-    fun show() {
-        isVisible = true
+// 日期选择器组件预览
+@Preview(showBackground = true, device = "id:pixel_5")
+@Composable
+fun DateSelectorPreview() {
+    // 使用应用主题包装预览
+    com.example.nutrilog.ui.theme.NutriLogTheme {
+        DateSelector(
+            selectedDate = "2024-01-17",
+            onDateChange = {},
+            onCalendarClick = {}
+        )
     }
+}
 
-    fun dismiss() {
-        isVisible = false
+// 日期选择对话框预览
+@Preview(showBackground = true, device = "id:pixel_5")
+@Composable
+fun DatePickerDialogPreview() {
+    // 使用应用主题包装预览
+    com.example.nutrilog.ui.theme.NutriLogTheme {
+        DatePickerDialog(
+            date = "2024-01-17",
+            onDateSelected = {},
+            onDismiss = {}
+        )
     }
 }
 

@@ -110,7 +110,8 @@ object AppModule {
     fun provideHomeViewModel(context: Context): com.example.nutrilog.ui.viewmodels.HomeViewModel {
         val mealRecordRepository = provideMealRecordRepository(context)
         val foodRepository = provideFoodRepository(context)
-        return com.example.nutrilog.ui.viewmodels.HomeViewModel(mealRecordRepository, foodRepository)
+        val trendAnalyzer = provideTrendAnalyzer()
+        return com.example.nutrilog.ui.viewmodels.HomeViewModel(mealRecordRepository, foodRepository, trendAnalyzer)
     }
     
     // 清理资源（用于测试）

@@ -43,7 +43,7 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem("food_categories", "食品类型", Icons.Default.Category),
         BottomNavItem("main", "饮食记录", Icons.Default.Restaurant),
         BottomNavItem("analysis", "分析", Icons.Outlined.Assessment),
-        BottomNavItem("reports", "报告", Icons.Outlined.Description),
+        // BottomNavItem("reports", "报告", Icons.Outlined.Description),
         BottomNavItem("profile", "我的", Icons.Default.Person)
     )
 

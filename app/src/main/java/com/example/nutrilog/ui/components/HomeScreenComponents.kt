@@ -102,6 +102,7 @@ fun getTodayDate(): String {
 @Composable
 fun TodaySummaryCard(
     summary: TodaySummary,
+    user: User?,
     onClick: () -> Unit
 ) {
     Card(
@@ -141,7 +142,7 @@ fun TodaySummaryCard(
             Spacer(modifier = Modifier.height(12.dp))
             
             // 健康评分进度条
-            HealthScoreProgress(score = 85) // 临时使用固定分数，实际应从 summary 中获取
+            HealthScoreProgress(score = user?.todayScore ?: 0) // 使用用户的真实健康评分
             
             Spacer(modifier = Modifier.height(8.dp))
             

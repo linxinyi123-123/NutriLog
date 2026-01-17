@@ -28,13 +28,23 @@ class MockRecordProvider : RecordProvider {
     override suspend fun getUserRecords(userId: Long, days: Int): List<MealRecord> {
         val records = mutableListOf<MealRecord>()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        
+        // 新用户模拟：userId为1时返回较少的记录
+        val isNewUser = userId == 1L
+        val effectiveDays = if (isNewUser) 1 else days
 
-        for (i in 0 until days) {
+        for (i in 0 until effectiveDays) {
             val date = LocalDate.now().minusDays(i.toLong())
             val dateStr = date.format(formatter)
 
             // 模拟不同餐次的记录
-            records.addAll(generateDailyRecords(dateStr, userId))
+            val dailyRecords = generateDailyRecords(dateStr, userId)
+            // 新用户：只返回早餐记录
+            if (isNewUser) {
+                records.addAll(dailyRecords.filter { it.mealType == MealType.BREAKFAST }.take(1))
+            } else {
+                records.addAll(dailyRecords)
+            }
         }
 
         return records

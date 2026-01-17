@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.nutrilog.data.entities.MealRecord
 import com.example.nutrilog.data.repository.MealRecordRepository
 import com.example.nutrilog.data.repository.FoodRepository
+import com.example.nutrilog.features.recommendation.challenge.ChallengeProgressTracker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +50,8 @@ data class Meal(
 class HomeViewModel(
     private val mealRecordRepository: MealRecordRepository,
     private val foodRepository: FoodRepository,
-    private val trendAnalyzer: com.example.nutrilog.analysis.analyzer.TrendAnalyzer
+    private val trendAnalyzer: com.example.nutrilog.analysis.analyzer.TrendAnalyzer,
+    private val challengeProgressTracker: ChallengeProgressTracker? = null
 ) : ViewModel() {
     // 使用Flow来观察用户数据
     private val _user = MutableStateFlow<User>(
@@ -94,6 +96,32 @@ class HomeViewModel(
     init {
         // 加载初始数据
         loadAllData()
+        
+        // 初始更新挑战进度
+        updateChallengeProgress()
+        
+        // 监听记录更新，自动刷新数据和挑战进度
+        viewModelScope.launch {
+            mealRecordRepository.recordUpdates().collect {
+                when (it) {
+                    is com.example.nutrilog.analysis.listener.RecordUpdate.RecordAdded -> {
+                        // 记录添加时刷新数据和挑战进度
+                        refreshAffectedData(it.record.date)
+                        updateChallengeProgress()
+                    }
+                    is com.example.nutrilog.analysis.listener.RecordUpdate.RecordUpdated -> {
+                        // 记录更新时刷新数据和挑战进度
+                        refreshAffectedData(it.record.date)
+                        updateChallengeProgress()
+                    }
+                    is com.example.nutrilog.analysis.listener.RecordUpdate.RecordDeleted -> {
+                        // 记录删除时刷新数据和挑战进度
+                        refreshAffectedData(it.date)
+                        updateChallengeProgress()
+                    }
+                }
+            }
+        }
     }
 
     // 加载所有数据
@@ -328,5 +356,33 @@ class HomeViewModel(
     // 刷新最近饮食记录
     fun refreshRecentMeals() {
         loadRecentMeals()
+    }
+    
+    // 刷新受影响的数据
+    private fun refreshAffectedData(date: String) {
+        // 获取今天的日期
+        val today = java.time.LocalDate.now().toString()
+        
+        // 如果是今天的记录变化，刷新今日摘要和最近记录
+        if (date == today) {
+            loadTodaySummary()
+            loadRecentMeals()
+        }
+        
+        // 刷新周趋势数据（因为周数据可能包含该日期）
+        loadWeeklyTrend()
+    }
+    
+    // 更新挑战进度
+    private fun updateChallengeProgress() {
+        viewModelScope.launch {
+            try {
+                // 假设用户ID为1，实际应该从用户数据中获取
+                challengeProgressTracker?.trackChallengeProgress(1L)
+            } catch (e: Exception) {
+                // 处理异常，确保不影响其他功能
+                e.printStackTrace()
+            }
+        }
     }
 }

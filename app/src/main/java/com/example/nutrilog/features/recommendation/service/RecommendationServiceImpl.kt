@@ -39,14 +39,48 @@ class RecommendationServiceImpl (
     override suspend fun getDailyRecommendations(userId: Long): List<Recommendation> {
         // 1. 构建推荐上下文
         val context = buildRecommendationContext(userId)
-
+        
         // 2. 生成所有推荐
         val recommendations = mutableListOf<Recommendation>()
-        recommendations.addAll(gapRecommender.generateRecommendations(context.nutritionalGaps, context))
-        recommendations.addAll(goalRecommender.generateGoalRecommendations(context.healthGoals, context))
-        recommendations.addAll(contextRecommender.generateContextRecommendations(context))
-        recommendations.addAll(timeRecommender.generateTimeRecommendations(context))
-        recommendations.addAll(locationRecommender.generateLocationRecommendations(context))
+        
+        // 新用户引导性推荐
+        if (context.isFirstTimeUser) {
+            val newUserRecommendation = Recommendation(
+                id = System.currentTimeMillis(),
+                type = RecommendationType.MEAL_PLAN,
+                title = "记录你的第一餐",
+                description = "欢迎使用NutriLog！开始记录你的第一餐，让我们一起关注你的健康饮食。",
+                priority = Priority.HIGH,
+                confidence = 1.0f,
+                reason = "新用户引导",
+                actions = listOf(
+                    Action.AddToMealPlan(emptyList()),
+                    Action.DismissRecommendation("稍后提醒")
+                ),
+                metadata = mapOf(
+                    "isNewUser" to true,
+                    "guidanceType" to "first_meal"
+                )
+            )
+            recommendations.add(newUserRecommendation)
+            recommendationRepository.saveRecommendation(newUserRecommendation)
+        }
+        
+        // 其他推荐
+        val gapRecs = gapRecommender.generateRecommendations(context.nutritionalGaps, context)
+        val goalRecs = goalRecommender.generateGoalRecommendations(context.healthGoals, context)
+        val contextRecs = contextRecommender.generateContextRecommendations(context)
+        val timeRecs = timeRecommender.generateTimeRecommendations(context)
+        val locationRecs = locationRecommender.generateLocationRecommendations(context)
+        
+        recommendations.addAll(gapRecs)
+        recommendations.addAll(goalRecs)
+        recommendations.addAll(contextRecs)
+        recommendations.addAll(timeRecs)
+        recommendations.addAll(locationRecs)
+        
+        // 保存所有推荐到仓库
+        recommendations.forEach { recommendationRepository.saveRecommendation(it) }
 
         // 3. 过滤和排序
         return filterAndRankRecommendations(recommendations, userId)
@@ -110,6 +144,7 @@ class RecommendationServiceImpl (
 
         return recommendations
             .filterNot { it.id in processedIds }  // 过滤已读
+            .distinctBy { "${it.type}:${it.title}:${it.reason}" }  // 去重
             .sortedWith(
                 compareByDescending<Recommendation> { it.priority }
                     .thenByDescending { it.confidence }

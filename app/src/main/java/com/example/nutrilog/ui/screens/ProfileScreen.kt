@@ -154,6 +154,23 @@ private fun SettingsCard() {
 
             ThemeSwitcher()
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 用户名
+        Text(
+            text = "张三",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 用户邮箱
+        Text(
+            text = "user@example.com",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 //@Composable
@@ -244,6 +261,32 @@ fun AchievementCard(achievement: com.example.nutrilog.features.recommendation.mo
         }
     }
 }
+//@Composable
+//private fun SettingsCard() {
+//    Card(
+//        modifier = Modifier.fillMaxWidth(),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+//        shape = MaterialTheme.shapes.large
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            // 深色模式开关
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 12.dp),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Text(
+//                    text = "深色模式",
+//                    style = MaterialTheme.typography.bodyLarge
+//                )
+//
+//                ThemeSwitcher()
+//            }
+//        }
+//    }
+//}
 
 // ProfileScreen 预览
 @OptIn(ExperimentalMaterial3Api::class)

@@ -18,7 +18,7 @@ class TimeBasedRecommender : BaseRecommender() {
         // 获取当前时间
         val currentTime = LocalTime.of(context.currentHour, 0) // 简化处理，假设分钟为0
 
-        // 1. 用餐时间提醒
+        // 1. 用餐时间提醒 - 总是生成，不管用户是否已经记录
         val mealReminderRecs = generateMealReminders(currentTime, context)
         recommendations.addAll(mealReminderRecs)
 
@@ -54,51 +54,62 @@ class TimeBasedRecommender : BaseRecommender() {
         // 检查是否已经记录了这个餐次的饮食
         val hasRecordedThisMeal = hasRecordedMeal(mealType, context)
 
-        if (!hasRecordedThisMeal) {
-            // 生成用餐提醒
-            val title = when (mealType) {
-                "早餐" -> "早餐时间到！"
-                "午餐" -> "午餐时间提醒"
-                "晚餐" -> "晚餐时间提醒"
-                else -> "加餐时间提醒"
-            }
+        // 总是生成提醒，不管是否已经记录
+        val title = when (mealType) {
+            "早餐" -> "早餐时间到！"
+            "午餐" -> "午餐时间提醒"
+            "晚餐" -> "晚餐时间提醒"
+            else -> "加餐时间提醒"
+        }
 
-            val description = when (mealType) {
-                "早餐" -> "记得吃早餐，为新的一天补充能量！建议搭配蛋白质和全谷物。"
-                "午餐" -> "午餐时间到了，注意营养均衡。建议一荤一素一主食。"
-                "晚餐" -> "晚餐宜清淡，避免过于油腻。建议蔬菜为主，蛋白质适量。"
-                else -> "加餐时间，可以选择水果、坚果或酸奶等健康零食。"
+        val description = when { 
+            hasRecordedThisMeal -> {
+                when (mealType) {
+                    "早餐" -> "你已经记录了今天的早餐，继续保持！"
+                    "午餐" -> "你已经记录了今天的午餐，干得好！"
+                    "晚餐" -> "你已经记录了今天的晚餐，很棒！"
+                    else -> "你已经记录了今天的加餐，继续保持健康习惯！"
+                }
             }
-
-            val priority = when (mealType) {
-                "早餐" -> Priority.HIGH  // 早餐很重要
-                "午餐" -> Priority.MEDIUM
-                "晚餐" -> Priority.MEDIUM
-                else -> Priority.LOW
+            else -> {
+                when (mealType) {
+                    "早餐" -> "记得吃早餐，为新的一天补充能量！建议搭配蛋白质和全谷物。"
+                    "午餐" -> "午餐时间到了，注意营养均衡。建议一荤一素一主食。"
+                    "晚餐" -> "晚餐宜清淡，避免过于油腻。建议蔬菜为主，蛋白质适量。"
+                    else -> "加餐时间，可以选择水果、坚果或酸奶等健康零食。"
+                }
             }
+        }
 
-            recommendations.add(
-                Recommendation(
-                    id = generateRecommendationId(),
-                    type = RecommendationType.MEAL_PLAN,
-                    title = title,
-                    description = description,
-                    priority = priority,
-                    confidence = 0.8f,
-                    reason = "基于当前时间(${currentTime.hour}:${currentTime.minute})的用餐提醒",
-                    actions = listOf(
-                        Action.ShowFoodDetails(-200 + mealType.hashCode().toLong()),
-                        Action.AddToMealPlan(emptyList()),
-                        Action.DismissRecommendation("稍后提醒")
-                    ),
-                    metadata = mapOf(
-                        "mealType" to mealType,
-                        "currentTime" to currentTime.toString(),
-                        "isReminder" to true
-                    )
+        val priority = when (mealType) {
+            "早餐" -> Priority.HIGH  // 早餐很重要
+            "午餐" -> Priority.MEDIUM
+            "晚餐" -> Priority.MEDIUM
+            else -> Priority.LOW
+        }
+
+        recommendations.add(
+            Recommendation(
+                id = generateRecommendationId(),
+                type = RecommendationType.MEAL_PLAN,
+                title = title,
+                description = description,
+                priority = priority,
+                confidence = 0.8f,
+                reason = "基于当前时间(${currentTime.hour}:${currentTime.minute})的用餐提醒",
+                actions = listOf(
+                    Action.ShowFoodDetails(-200 + mealType.hashCode().toLong()),
+                    Action.AddToMealPlan(emptyList()),
+                    Action.DismissRecommendation("稍后提醒")
+                ),
+                metadata = mapOf(
+                    "mealType" to mealType,
+                    "currentTime" to currentTime.toString(),
+                    "isReminder" to true,
+                    "hasRecorded" to hasRecordedThisMeal
                 )
             )
-        }
+        )
 
         return recommendations
     }

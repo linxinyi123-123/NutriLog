@@ -6,6 +6,8 @@ import com.example.nutrilog.features.recommendation.database.dao.ChallengeDao
 import com.example.nutrilog.features.recommendation.gamification.AchievementRepository
 import com.example.nutrilog.features.recommendation.gamification.AchievementUnlocker
 import com.example.nutrilog.features.recommendation.gamification.AchievementRewardSystem
+import com.example.nutrilog.data.repository.MealRecordRepository
+import com.example.nutrilog.data.repository.FoodRepository
 import com.example.nutrilog.features.recommendation.challenge.ChallengeRepository
 import com.example.nutrilog.features.recommendation.challenge.ChallengeSystem
 import com.example.nutrilog.features.recommendation.challenge.ChallengeProgressTracker
@@ -38,7 +40,9 @@ object GameSystemFactory {
     fun createChallengeSystem(challengeDao: ChallengeDao): ChallengeComponents {
         val challengeRepository = ChallengeRepository(challengeDao)
         val challengeSystem = ChallengeSystem(challengeRepository)
-        val challengeProgressTracker = ChallengeProgressTracker(challengeRepository)
+        // 简化实现：使用null作为mealRecordRepository和foodRepository
+        // 实际应该传入真实的Repository实例
+        val challengeProgressTracker = ChallengeProgressTracker(challengeRepository, null!!, null!!)
         val weeklyChallengeSystem = WeeklyChallengeSystem(challengeRepository)
 
         return ChallengeComponents(

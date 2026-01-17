@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import com.example.nutrilog.ui.components.*
 import com.example.nutrilog.ui.viewmodels.HomeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutrilog.features.recommendation.viewmodel.RecommendationViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +40,14 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
     val todaySummaryState = viewModel.todaySummary.collectAsState()
     val weeklyTrendState = viewModel.weeklyTrend.collectAsState()
     val recentMealsState = viewModel.recentMeals.collectAsState()
+    
+    // 添加推荐ViewModel
+    val recommendationViewModel: RecommendationViewModel = viewModel()
+    // 收集推荐数据
+    val recommendations = recommendationViewModel.recommendations.collectAsState()
+    val challenges = recommendationViewModel.challenges.collectAsState()
+    val loading = recommendationViewModel.loading.collectAsState()
+    val error = recommendationViewModel.error.collectAsState()
     
     Scaffold(
         topBar = {
@@ -87,11 +96,201 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            // 5. 最近饮食记录
+            // 6. 个性化推荐卡片
+            if (recommendations.value.isNotEmpty()) {
+                Text(
+                    text = "个性化推荐",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                recommendations.value.forEach { recommendation ->
+                    RecommendationCard(
+                        recommendation = recommendation,
+                        onApply = { recommendationViewModel.markRecommendationApplied(recommendation.id) },
+                        onDismiss = { /* 稍后处理 */ }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+            
+            // 7. 今日挑战卡片
+            if (challenges.value.isNotEmpty()) {
+                Text(
+                    text = "今日挑战",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                challenges.value.forEach { challenge ->
+                    ChallengeCard(
+                        challenge = challenge,
+                        onUpdateProgress = { challengeId, progress ->
+                            recommendationViewModel.updateChallengeProgress(challengeId, progress)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+            
+            // 8. 加载状态和错误信息
+            if (loading.value) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            
+            if (error.value != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = error.value ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // 10. 最近饮食记录
             RecentMealsSection(meals = recentMealsState.value)
         }
     }
 }
+
+// 推荐卡片组件
+@Composable
+fun RecommendationCard(
+    recommendation: com.example.nutrilog.features.recommendation.model.Recommendation,
+    onApply: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = recommendation.title,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = recommendation.description,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedButton(onClick = onDismiss) {
+                    Text("稍后再说")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(onClick = onApply) {
+                    Text("立即执行")
+                }
+            }
+        }
+    }
+}
+
+// 挑战卡片组件
+@Composable
+fun ChallengeCard(
+    challenge: com.example.nutrilog.features.recommendation.challenge.DailyChallenge,
+    onUpdateProgress: (Long, Float) -> Unit = { _, _ -> }
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = challenge.title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                if (challenge.completed) {
+                    Text(
+                        text = "已完成",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Text(
+                text = challenge.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+
+            LinearProgressIndicator(
+                progress = challenge.progress / challenge.target,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "进度: ${challenge.progress.toInt()}/${challenge.target.toInt()} ${challenge.unit}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                
+                if (!challenge.completed) {
+                    Button(
+                        onClick = { 
+                            val newProgress = minOf(challenge.progress + 1, challenge.target)
+                            onUpdateProgress(challenge.id, newProgress)
+                        },
+                        modifier = Modifier.padding(top = 8.dp),
+                        contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                    ) {
+                        Text("更新进度")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
 // HomeScreen 预览
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,44 +1,115 @@
+// features/recommendation/viewmodel/RecommendationViewModel.kt
 package com.example.nutrilog.features.recommendation.viewmodel
 
-// features/recommendation/viewmodel/RecommendationViewModel.kt
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.nutrilog.features.recommendation.factory.ServiceFactory
+import com.example.nutrilog.features.recommendation.service.RecommendationService
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+
 class RecommendationViewModel : ViewModel() {
-    private val recommendationService = ServiceFactory.createRecommendationService()
 
-    private val _recommendations = MutableStateFlow<List<Recommendation>>(emptyList())
-    val recommendations: StateFlow<List<Recommendation>> = _recommendations
+    private val recommendationService: RecommendationService =
+        ServiceFactory.createRecommendationService()
 
-    private val _challenges = MutableStateFlow<List<DailyChallenge>>(emptyList())
-    val challenges: StateFlow<List<DailyChallenge>> = _challenges
+    private val _recommendations = MutableStateFlow<List<com.example.nutrilog.features.recommendation.model.Recommendation>>(emptyList())
+    val recommendations: StateFlow<List<com.example.nutrilog.features.recommendation.model.Recommendation>> = _recommendations
 
-    private val _achievements = MutableStateFlow<List<Achievement>>(emptyList())
-    val achievements: StateFlow<List<Achievement>> = _achievements
+    private val _challenges = MutableStateFlow<List<com.example.nutrilog.features.recommendation.challenge.DailyChallenge>>(emptyList())
+    val challenges: StateFlow<List<com.example.nutrilog.features.recommendation.challenge.DailyChallenge>> = _challenges
+
+    private val _achievements = MutableStateFlow<List<com.example.nutrilog.features.recommendation.model.gamification.Achievement>>(emptyList())
+    val achievements: StateFlow<List<com.example.nutrilog.features.recommendation.model.gamification.Achievement>> = _achievements
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    init {
+        // 初始加载数据
+        loadData(1L) // 假设用户ID为1
+    }
+
+    fun loadData(userId: Long) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                // 并行加载所有数据
+                val recommendationsDeferred = launch { loadRecommendations(userId) }
+                val challengesDeferred = launch { loadChallenges(userId) }
+                val achievementsDeferred = launch { loadAchievements(userId) }
+
+                // 等待所有加载完成
+                recommendationsDeferred.join()
+                challengesDeferred.join()
+                achievementsDeferred.join()
+
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = "加载失败: ${e.message}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 
     fun loadRecommendations(userId: Long) {
         viewModelScope.launch {
-            val recs = recommendationService.getDailyRecommendations(userId)
-            _recommendations.value = recs
+            try {
+                val recommendations = recommendationService.getDailyRecommendations(userId)
+                _recommendations.value = recommendations
+            } catch (e: Exception) {
+                _error.value = "加载推荐失败: ${e.message}"
+            }
         }
     }
 
     fun loadChallenges(userId: Long) {
         viewModelScope.launch {
-            val chals = recommendationService.getDailyChallenges(userId)
-            _challenges.value = chals
+            try {
+                val challenges = recommendationService.getDailyChallenges(userId)
+                _challenges.value = challenges
+            } catch (e: Exception) {
+                _error.value = "加载挑战失败: ${e.message}"
+            }
         }
     }
 
     fun loadAchievements(userId: Long) {
         viewModelScope.launch {
-            val achieves = recommendationService.getUserAchievements(userId)
-            _achievements.value = achieves
+            try {
+                val achievements = recommendationService.getUserAchievements(userId)
+                _achievements.value = achievements
+            } catch (e: Exception) {
+                _error.value = "加载成就失败: ${e.message}"
+            }
         }
     }
 
     fun markRecommendationApplied(recommendationId: Long) {
         viewModelScope.launch {
-            recommendationService.markRecommendationApplied(recommendationId)
-            // 刷新推荐列表
-            loadRecommendations(1L) // 假设userId=1
+            try {
+                recommendationService.markRecommendationApplied(recommendationId)
+                // 重新加载推荐以更新列表
+                loadRecommendations(1L)
+            } catch (e: Exception) {
+                _error.value = "应用推荐失败: ${e.message}"
+            }
+        }
+    }
+
+    fun updateChallengeProgress(challengeId: Long, progress: Float) {
+        viewModelScope.launch {
+            try {
+                recommendationService.updateChallengeProgress(challengeId, progress)
+                // 重新加载挑战
+                loadChallenges(1L)
+            } catch (e: Exception) {
+                _error.value = "更新挑战进度失败: ${e.message}"
+            }
         }
     }
 }

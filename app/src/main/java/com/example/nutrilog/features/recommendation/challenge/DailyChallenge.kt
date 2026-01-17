@@ -15,10 +15,10 @@ data class DailyChallenge(
     val type: ChallengeType,       // 挑战类型
     val rewardPoints: Int,         // 奖励积分
     val difficulty: ChallengeDifficulty, // 挑战难度
-    val progress: Float,           // 当前进度 (0-1)
+    var progress: Float,           // 当前进度 (0-1)
     val target: Float,             // 目标值
     val unit: String,              // 单位（如g、次、种）
-    val completed: Boolean = false, // 是否已完成
+    var completed: Boolean = false, // 是否已完成
     val metadata: Map<String, Any> = emptyMap() // 扩展数据
 ) {
 

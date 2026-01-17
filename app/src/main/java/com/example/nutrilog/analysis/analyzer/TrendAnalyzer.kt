@@ -72,6 +72,11 @@ class TrendAnalyzer {
         val targetFatRatio = 0.25     // 脂肪占总卡路里的比例
         val targetCarbRatio = 0.60    // 碳水占总卡路里的比例
 
+        // 如果没有营养数据，返回低分
+        if (nutrition.calories <= 0 && nutrition.protein <= 0 && nutrition.carbs <= 0 && nutrition.fat <= 0) {
+            return 50.0 // 没有数据时返回中等偏低分数，避免所有日期都是相同分数
+        }
+
         // 卡路里评分 (±20%为满分范围)
         val calorieRatio = nutrition.calories  / targetCalories
         score -= when {

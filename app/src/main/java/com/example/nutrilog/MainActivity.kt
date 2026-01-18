@@ -34,6 +34,7 @@ import com.example.nutrilog.ui.screens.ReportPreviewScreen
 import com.example.nutrilog.ui.theme.NutriLogTheme
 import com.example.nutrilog.ui.viewmodels.MainViewModel
 import com.example.nutrilog.ui.viewmodels.AddRecordViewModel
+import com.example.nutrilog.features.recommendation.ui.screens.RecommendationDashboard
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,8 +102,11 @@ fun NutriLogApp() {
             composable("profile") {
                 ProfileScreen(navController)
             }
-            
-            // 主屏幕（原来的main页面）
+                composable("recommendations") {
+                RecommendationDashboard()
+            }
+
+                // 主屏幕（原来的main页面）
             composable("main") {
                 MainScreen(
                     navController = navController,

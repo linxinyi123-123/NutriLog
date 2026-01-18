@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Assessment
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.filled.Category
@@ -42,6 +43,7 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem("home", "首页", Icons.Default.Home),
         BottomNavItem("food_categories", "食品类型", Icons.Default.Category),
         BottomNavItem("main", "饮食记录", Icons.Default.Restaurant),
+        BottomNavItem("recommendations", "智能推荐", Icons.Filled.Recommend),
         BottomNavItem("analysis", "分析", Icons.Outlined.Assessment),
         // BottomNavItem("reports", "报告", Icons.Outlined.Description),
         BottomNavItem("profile", "我的", Icons.Default.Person)

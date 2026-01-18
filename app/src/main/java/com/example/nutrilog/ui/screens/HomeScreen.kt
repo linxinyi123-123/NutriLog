@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.AddCircle
@@ -48,7 +49,7 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
     val challenges = recommendationViewModel.challenges.collectAsState()
     val loading = recommendationViewModel.loading.collectAsState()
     val error = recommendationViewModel.error.collectAsState()
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -58,6 +59,18 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
                         Icon(Icons.Filled.Menu, contentDescription = "菜单")
                     }
                 },
+                actions = {
+                    // 添加推荐图标按钮
+                    IconButton(
+                        onClick = { navController.navigate("recommendations") }
+                    ) {
+                        Icon(
+                            Icons.Filled.Recommend,
+                            contentDescription = "智能推荐",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -65,13 +78,13 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
             )
         },
         containerColor = MaterialTheme.colorScheme.background
-    ) {
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(
-                    top = it.calculateTopPadding() + 16.dp,
+                    top = padding.calculateTopPadding() + 16.dp,
                     start = 16.dp,
                     end = 16.dp,
                     bottom = 16.dp
@@ -79,32 +92,51 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
         ) {
             // 1. 欢迎区域
             WelcomeSection(user = userState.value)
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             // 2. 今日摘要卡片
             TodaySummaryCard(
                 summary = todaySummaryState.value,
                 user = userState.value,
                 onClick = { navController.navigate("analysis") }
             )
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             // 4. 健康趋势卡片
             HealthTrendCard(trend = weeklyTrendState.value)
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
-            // 6. 个性化推荐卡片
+
+            // 6. 个性化推荐卡片（添加查看更多按钮）
             if (recommendations.value.isNotEmpty()) {
-                Text(
-                    text = "个性化推荐",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                recommendations.value.forEach { recommendation ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "个性化推荐",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    TextButton(
+                        onClick = { navController.navigate("recommendations") }
+                    ) {
+                        Text("查看更多")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            Icons.Default.ArrowForward,
+                            contentDescription = "查看更多",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                recommendations.value.take(2).forEach { recommendation ->  // 只显示前2个
                     RecommendationCard(
                         recommendation = recommendation,
                         onApply = { recommendationViewModel.markRecommendationApplied(recommendation.id) },
@@ -113,16 +145,35 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-            
-            // 7. 今日挑战卡片
+
+            // 7. 今日挑战卡片（同样添加查看更多按钮）
             if (challenges.value.isNotEmpty()) {
-                Text(
-                    text = "今日挑战",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                challenges.value.forEach { challenge ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "今日挑战",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    TextButton(
+                        onClick = { navController.navigate("recommendations") }
+                    ) {
+                        Text("查看更多")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            Icons.Default.ArrowForward,
+                            contentDescription = "查看更多",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                challenges.value.take(2).forEach { challenge ->  // 只显示前2个
                     ChallengeCard(
                         challenge = challenge,
                         onUpdateProgress = { challengeId, progress ->
@@ -132,7 +183,7 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-            
+
             // 8. 加载状态和错误信息
             if (loading.value) {
                 Box(
@@ -142,7 +193,7 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
                     CircularProgressIndicator()
                 }
             }
-            
+
             if (error.value != null) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -158,9 +209,9 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             // 10. 最近饮食记录
             RecentMealsSection(meals = recentMealsState.value)
         }

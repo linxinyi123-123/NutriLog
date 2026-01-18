@@ -141,50 +141,74 @@ fun RecommendationCard(
     }
 }
 
+// 修复ChallengeCard中的onUpdateProgress函数
 @Composable
-fun ChallengeCard(challenge: com.example.nutrilog.features.recommendation.challenge.DailyChallenge) {
+fun ChallengeCard(
+    challenge: com.example.nutrilog.features.recommendation.challenge.DailyChallenge,
+    onUpdateProgress: (Long, Float) -> Unit = { _, _ -> }
+) {
     Card(
-        elevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = 4.dp,
+        shape = MaterialTheme.shapes.medium
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = challenge.title,
-                    style = MaterialTheme.typography.subtitle1
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = challenge.title,
+                        style = MaterialTheme.typography.subtitle1
+                    )
+                    Text(
+                        text = challenge.description,
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                    )
+                }
 
-                Text(
-                    text = challenge.description,
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-
-                LinearProgressIndicator(
-                    progress = challenge.progress / challenge.target,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                )
-
-                Text(
-                    text = "进度: ${challenge.progress.toInt()}/${challenge.target.toInt()} ${challenge.unit}",
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                if (challenge.completed) {
+                    Text(
+                        text = "已完成",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.primary
+                    )
+                }
             }
 
-            if (challenge.completed) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LinearProgressIndicator(
+                progress = challenge.progress / challenge.target,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
-                    text = "已完成",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.primary
+                    text = "进度: ${challenge.progress.toInt()}/${challenge.target.toInt()} ${challenge.unit}",
+                    style = MaterialTheme.typography.caption
                 )
+
+                // 修复：使用challenge.id而不是硬编码
+                Button(
+                    onClick = {
+                        val newProgress = minOf(challenge.progress + 1, challenge.target)
+                        onUpdateProgress(challenge.id, newProgress)
+                    },
+                    enabled = !challenge.completed && challenge.progress < challenge.target
+                ) {
+                    Text("更新进度")
+                }
             }
         }
     }

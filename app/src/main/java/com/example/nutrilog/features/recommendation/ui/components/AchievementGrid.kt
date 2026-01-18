@@ -46,13 +46,7 @@ fun AchievementCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (achievement.unlockedAt != null)
-                MaterialTheme.colorScheme.surfaceVariant
-            else
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
-        )
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -91,7 +85,7 @@ fun AchievementCard(
             // 成就名称
             Text(
                 text = achievement.name,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -100,9 +94,10 @@ fun AchievementCard(
             // 成就描述
             Text(
                 text = achievement.description,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
@@ -111,7 +106,7 @@ fun AchievementCard(
             // 积分
             Text(
                 text = "${achievement.points} 积分",
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary
             )
         }

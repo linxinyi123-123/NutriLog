@@ -117,6 +117,7 @@ class RecommendationDatabaseCallback(
     private suspend fun initializeDatabase(database: RecommendationDatabase) {
         // 初始化默认成就数据
         val defaultAchievements = listOf(
+            // 基础记录成就
             AchievementEntity(
                 id = 1L,
                 userId = 0, // 0表示模板成就，实际用户成就需要复制这个模板
@@ -129,6 +130,15 @@ class RecommendationDatabaseCallback(
             AchievementEntity(
                 id = 2L,
                 userId = 0,
+                name = "连续记录3天",
+                description = "连续3天记录饮食",
+                type = "MILESTONE",
+                icon = "streak_3",
+                points = 20
+            ),
+            AchievementEntity(
+                id = 3L,
+                userId = 0,
                 name = "连续记录7天",
                 description = "连续7天记录饮食",
                 type = "MILESTONE",
@@ -136,34 +146,65 @@ class RecommendationDatabaseCallback(
                 points = 50
             ),
             AchievementEntity(
-                id = 3L,
-                userId = 0,
-                name = "营养均衡大师",
-                description = "一周内每日营养评分超过85分",
-                type = "SPECIAL",
-                icon = "balance_master",
-                points = 100
-            ),
-            AchievementEntity(
                 id = 4L,
                 userId = 0,
-                name = "蔬菜达人",
-                description = "连续5天摄入足够蔬菜",
+                name = "连续记录14天",
+                description = "连续14天记录饮食",
                 type = "MILESTONE",
-                icon = "veggie_master",
-                points = 40
+                icon = "streak_14",
+                points = 100
             ),
             AchievementEntity(
                 id = 5L,
                 userId = 0,
-                name = "饮水冠军",
-                description = "连续3天饮水达标",
-                type = "DAILY",
-                icon = "water_champion",
+                name = "连续记录30天",
+                description = "连续30天记录饮食",
+                type = "MILESTONE",
+                icon = "streak_30",
+                points = 200
+            ),
+            
+            // 记录数量成就
+            AchievementEntity(
+                id = 6L,
+                userId = 0,
+                name = "记录达人",
+                description = "累计记录10次饮食",
+                type = "MILESTONE",
+                icon = "record_10",
                 points = 30
             ),
             AchievementEntity(
-                id = 6L,
+                id = 7L,
+                userId = 0,
+                name = "记录大师",
+                description = "累计记录20次饮食",
+                type = "MILESTONE",
+                icon = "record_20",
+                points = 60
+            ),
+            AchievementEntity(
+                id = 8L,
+                userId = 0,
+                name = "记录王者",
+                description = "累计记录50次饮食",
+                type = "MILESTONE",
+                icon = "record_50",
+                points = 150
+            ),
+            AchievementEntity(
+                id = 9L,
+                userId = 0,
+                name = "记录传奇",
+                description = "累计记录100次饮食",
+                type = "MILESTONE",
+                icon = "record_100",
+                points = 300
+            ),
+            
+            // 营养目标成就
+            AchievementEntity(
+                id = 10L,
                 userId = 0,
                 name = "蛋白质专家",
                 description = "蛋白质摄入持续达标一周",
@@ -172,13 +213,154 @@ class RecommendationDatabaseCallback(
                 points = 80
             ),
             AchievementEntity(
-                id = 7L,
+                id = 11L,
+                userId = 0,
+                name = "膳食纤维达人",
+                description = "连续5天膳食纤维摄入达标",
+                type = "MILESTONE",
+                icon = "fiber_master",
+                points = 50
+            ),
+            AchievementEntity(
+                id = 12L,
+                userId = 0,
+                name = "维生素C冠军",
+                description = "连续3天维生素C摄入达标",
+                type = "DAILY",
+                icon = "vitamin_c_champion",
+                points = 25
+            ),
+            AchievementEntity(
+                id = 13L,
+                userId = 0,
+                name = "钙质专家",
+                description = "连续7天钙质摄入达标",
+                type = "MILESTONE",
+                icon = "calcium_pro",
+                points = 70
+            ),
+            
+            // 食物多样性成就
+            AchievementEntity(
+                id = 14L,
                 userId = 0,
                 name = "食物探索家",
                 description = "尝试20种不同食物",
                 type = "MILESTONE",
                 icon = "variety_explorer",
                 points = 60
+            ),
+            AchievementEntity(
+                id = 15L,
+                userId = 0,
+                name = "食物冒险家",
+                description = "尝试30种不同食物",
+                type = "MILESTONE",
+                icon = "variety_adventurer",
+                points = 90
+            ),
+            AchievementEntity(
+                id = 16L,
+                userId = 0,
+                name = "食物大师",
+                description = "尝试50种不同食物",
+                type = "MILESTONE",
+                icon = "variety_master",
+                points = 150
+            ),
+            
+            // 健康生活成就
+            AchievementEntity(
+                id = 17L,
+                userId = 0,
+                name = "蔬菜达人",
+                description = "连续5天摄入足够蔬菜",
+                type = "MILESTONE",
+                icon = "veggie_master",
+                points = 40
+            ),
+            AchievementEntity(
+                id = 18L,
+                userId = 0,
+                name = "水果爱好者",
+                description = "连续5天摄入足够水果",
+                type = "MILESTONE",
+                icon = "fruit_lover",
+                points = 40
+            ),
+            AchievementEntity(
+                id = 19L,
+                userId = 0,
+                name = "饮水冠军",
+                description = "连续3天饮水达标",
+                type = "DAILY",
+                icon = "water_champion",
+                points = 30
+            ),
+            AchievementEntity(
+                id = 20L,
+                userId = 0,
+                name = "饮水大师",
+                description = "连续7天饮水达标",
+                type = "MILESTONE",
+                icon = "water_master",
+                points = 60
+            ),
+            AchievementEntity(
+                id = 21L,
+                userId = 0,
+                name = "饮水传奇",
+                description = "连续30天饮水达标",
+                type = "MILESTONE",
+                icon = "water_legend",
+                points = 150
+            ),
+            
+            // 特殊成就
+            AchievementEntity(
+                id = 22L,
+                userId = 0,
+                name = "营养均衡大师",
+                description = "一周内每日营养评分超过85分",
+                type = "SPECIAL",
+                icon = "balance_master",
+                points = 100
+            ),
+            AchievementEntity(
+                id = 23L,
+                userId = 0,
+                name = "完美一天",
+                description = "一天内完成所有日常挑战",
+                type = "SPECIAL",
+                icon = "perfect_day",
+                points = 50
+            ),
+            AchievementEntity(
+                id = 24L,
+                userId = 0,
+                name = "完美一周",
+                description = "一周内完成5天完美记录",
+                type = "SPECIAL",
+                icon = "perfect_week",
+                points = 150
+            ),
+            AchievementEntity(
+                id = 25L,
+                userId = 0,
+                name = "成就收藏家",
+                description = "解锁10个成就",
+                type = "SECRET",
+                icon = "collector",
+                points = 100
+            ),
+            AchievementEntity(
+                id = 26L,
+                userId = 0,
+                name = "成就大师",
+                description = "解锁20个成就",
+                type = "SECRET",
+                icon = "achievement_master",
+                points = 200
             )
         )
 

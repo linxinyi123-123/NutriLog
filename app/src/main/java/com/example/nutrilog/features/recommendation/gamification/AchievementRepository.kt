@@ -88,15 +88,47 @@ class AchievementRepository(
      * 将数据库实体转换为领域模型
      */
     private fun AchievementEntity.toDomainModel(): Achievement {
-        // 注意：这里我们简化了Condition的解析
-        // 实际项目中，你可能需要从数据库存储的字符串中解析出Condition
-        // 这里我们先使用一个简单的Condition.StreakDays(1)作为占位符
+        // 为每个成就ID分配对应的解锁条件
         val condition = when (this.id) {
-            1L -> Condition.StreakDays(1)
-            2L -> Condition.StreakDays(7)
-            3L -> Condition.TotalRecords(10)
-            4L -> Condition.NutrientTarget("protein", 60.0)
-            5L -> Condition.FoodVariety(10)
+            // 基础记录成就
+            1L -> Condition.StreakDays(1)          // 首次记录
+            2L -> Condition.StreakDays(3)          // 连续记录3天
+            3L -> Condition.StreakDays(7)          // 连续记录7天
+            4L -> Condition.StreakDays(14)         // 连续记录14天
+            5L -> Condition.StreakDays(30)         // 连续记录30天
+            
+            // 记录数量成就
+            6L -> Condition.TotalRecords(10)       // 记录达人
+            7L -> Condition.TotalRecords(20)       // 记录大师
+            8L -> Condition.TotalRecords(50)       // 记录王者
+            9L -> Condition.TotalRecords(100)      // 记录传奇
+            
+            // 营养目标成就
+            10L -> Condition.NutrientTarget("protein", 60.0)       // 蛋白质专家
+            11L -> Condition.NutrientTarget("fiber", 25.0)         // 膳食纤维达人
+            12L -> Condition.NutrientTarget("vitamin_c", 90.0)     // 维生素C冠军
+            13L -> Condition.NutrientTarget("calcium", 1000.0)      // 钙质专家
+            
+            // 食物多样性成就
+            14L -> Condition.FoodVariety(20)       // 食物探索家
+            15L -> Condition.FoodVariety(30)       // 食物冒险家
+            16L -> Condition.FoodVariety(50)       // 食物大师
+            
+            // 健康生活成就
+            17L -> Condition.NutrientTarget("vegetables", 300.0)   // 蔬菜达人
+            18L -> Condition.NutrientTarget("fruits", 200.0)       // 水果爱好者
+            19L -> Condition.StreakDays(3)          // 饮水冠军
+            20L -> Condition.StreakDays(7)          // 饮水大师
+            21L -> Condition.StreakDays(30)         // 饮水传奇
+            
+            // 特殊成就
+            22L -> Condition.TotalRecords(7)        // 营养均衡大师
+            23L -> Condition.TotalRecords(3)        // 完美一天
+            24L -> Condition.StreakDays(5)          // 完美一周
+            25L -> Condition.TotalRecords(10)       // 成就收藏家
+            26L -> Condition.TotalRecords(20)       // 成就大师
+            
+            // 默认条件
             else -> Condition.StreakDays(1)
         }
 

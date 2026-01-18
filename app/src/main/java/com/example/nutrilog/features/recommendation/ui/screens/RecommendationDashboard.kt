@@ -42,12 +42,8 @@ fun RecommendationDashboard() {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar( // 使用 CenterAlignedTopAppBar 替代 TopAppBar
-                title = { Text("智能推荐") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+            TopAppBar(
+                title = { Text("智能推荐") }
             )
         }
     ) { padding ->
@@ -170,10 +166,7 @@ fun HealthOverviewSection() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            .padding(horizontal = 16.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -186,8 +179,7 @@ fun HealthOverviewSection() {
             ) {
                 Text(
                     text = "健康概览",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.headlineMedium
                 )
 
                 // 健康分数
@@ -312,12 +304,12 @@ fun ChallengeTabContent(
                 }
             }
         } else {
-            // 使用 Column 而不是 LazyColumn
+            // 使用 Column 而不是 LazyColumn，调整间距与其他卡片保持一致
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()), // 添加垂直滚动
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 challenges.forEach { challenge ->
                     ChallengeCard(
@@ -363,45 +355,67 @@ fun AchievementTabContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 已解锁和未解锁成就
-        val unlocked = achievements.filter { it.unlockedAt != null }
-        val locked = achievements.filter { it.unlockedAt == null }
+        // 成就导航栏 - 让用户可以切换查看全部、已解锁或未解锁成就
+        var selectedCategory by remember { mutableStateOf("全部") }
+        val categories = listOf("全部", "已解锁", "待解锁")
 
-        if (unlocked.isNotEmpty()) {
-            Text(
-                text = "已解锁成就",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            // 使用 Column 而不是 Grid，如果需要网格效果请使用 FlowRow
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                unlocked.forEach { achievement ->
-                    // 这里需要替换为你的 AchievementItem 组件
-                    AchievementItem(
-                        achievement = achievement,
-                        onClick = onAchievementClick
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            categories.forEach { category ->
+                OutlinedButton(
+                    onClick = { selectedCategory = category },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = if (selectedCategory == category) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
                     )
+                ) {
+                    Text(text = category)
                 }
             }
         }
 
-        if (locked.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "待解锁成就",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+        // 根据选择过滤成就
+        val filteredAchievements = when (selectedCategory) {
+            "已解锁" -> achievements.filter { it.unlockedAt != null }
+            "待解锁" -> achievements.filter { it.unlockedAt == null }
+            else -> achievements
+        }
+
+        // 显示过滤后的成就
+        if (filteredAchievements.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = when (selectedCategory) {
+                        "已解锁" -> "暂无已解锁成就"
+                        "待解锁" -> "暂无待解锁成就"
+                        else -> "暂无成就"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+        } else {
+            // 使用 Column 显示成就列表
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                locked.forEach { achievement ->
+                filteredAchievements.forEach { achievement ->
                     AchievementItem(
                         achievement = achievement,
                         onClick = onAchievementClick
@@ -417,32 +431,110 @@ fun AchievementItem(
     achievement: com.example.nutrilog.features.recommendation.model.gamification.Achievement,
     onClick: (com.example.nutrilog.features.recommendation.model.gamification.Achievement) -> Unit
 ) {
-    // 这里简化显示，你需要根据实际 Achievement 模型调整
+    val isUnlocked = achievement.unlockedAt != null
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        onClick = { onClick(achievement) }
+        onClick = { onClick(achievement) },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // 成就图标 - 根据解锁状态改变颜色
             Icon(
                 imageVector = Icons.Filled.EmojiEvents,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                contentDescription = achievement.name,
+                modifier = Modifier.size(40.dp),
+                tint = if (isUnlocked) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                }
             )
+            
             Spacer(modifier = Modifier.width(12.dp))
-            Column {
+            
+            // 成就信息
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = achievement.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (isUnlocked) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        }
+                    )
+                    
+                    // 解锁状态标记
+                    if (isUnlocked) {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = "已解锁",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = "未解锁",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
                 Text(
-                    text = achievement.name ?: "成就",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = achievement.description ?: "",
+                    text = achievement.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        Text(
+                            text = "${achievement.points} 积分",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isUnlocked) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            },
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                        
+                        // 解锁时间
+                        if (isUnlocked && achievement.unlockedAt != null) {
+                            Text(
+                                text = "已解锁",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "未解锁",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
                 )
             }
         }

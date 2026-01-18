@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutrilog.features.recommendation.viewmodel.RecommendationViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.example.nutrilog.features.recommendation.ui.components.ChallengeCard
 // features/recommendation/ui/screens/RecommendationScreen.kt
 @Composable
 fun RecommendationScreen() {
@@ -141,75 +142,3 @@ fun RecommendationCard(
     }
 }
 
-// 修复ChallengeCard中的onUpdateProgress函数
-@Composable
-fun ChallengeCard(
-    challenge: com.example.nutrilog.features.recommendation.challenge.DailyChallenge,
-    onUpdateProgress: (Long, Float) -> Unit = { _, _ -> }
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = 4.dp,
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = challenge.title,
-                        style = MaterialTheme.typography.subtitle1
-                    )
-                    Text(
-                        text = challenge.description,
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                    )
-                }
-
-                if (challenge.completed) {
-                    Text(
-                        text = "已完成",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.primary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LinearProgressIndicator(
-                progress = challenge.progress / challenge.target,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "进度: ${challenge.progress.toInt()}/${challenge.target.toInt()} ${challenge.unit}",
-                    style = MaterialTheme.typography.caption
-                )
-
-                // 修复：使用challenge.id而不是硬编码
-                Button(
-                    onClick = {
-                        val newProgress = minOf(challenge.progress + 1, challenge.target)
-                        onUpdateProgress(challenge.id, newProgress)
-                    },
-                    enabled = !challenge.completed && challenge.progress < challenge.target
-                ) {
-                    Text("更新进度")
-                }
-            }
-        }
-    }
-}

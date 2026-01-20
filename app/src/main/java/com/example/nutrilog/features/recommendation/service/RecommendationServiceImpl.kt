@@ -272,6 +272,9 @@ class RecommendationServiceImpl (
         val streakDays = recordRepository.getStreakDays(userId)
         val varietyCount = recordRepository.getFoodVarietyCount(userId, 7)
         val totalRecords = recordRepository.getUserRecordCount(userId)
+        val healthScore = nutritionAnalysisService.getLatestHealthScore(userId)
+        val nutritionalGaps = nutritionAnalysisService.getNutritionalGaps(userId, 30)
+        val hasNoMajorGaps = nutritionalGaps.none { it.severity == Severity.SEVERE }
 
         // 获取已解锁的成就
         val unlockedAchievements = recommendationRepository.getUserAchievements(userId)
@@ -279,98 +282,160 @@ class RecommendationServiceImpl (
 
         val allAchievements = mutableListOf<Achievement>()
 
-        // 一周坚持者
-        if (streakDays >= 7) {
-            val isUnlocked = unlockedIds.contains(1L)
-            allAchievements.add(
-                Achievement(
-                    id = 1,
-                    name = "一周坚持者",
-                    description = "连续记录7天饮食",
-                    type = AchievementType.MILESTONE,
-                    icon = "achievement_streak_7",
-                    points = 50,
-                    condition = Condition.StreakDays(7),
-                    unlockedAt = if (isUnlocked) System.currentTimeMillis() - 86400000 else null
-                )
+        // 1. 一周坚持者 - 连续记录7天饮食
+        val isWeekStreakUnlocked = unlockedIds.contains(1L) || streakDays >= 7
+        allAchievements.add(
+            Achievement(
+                id = 1,
+                name = "一周坚持者",
+                description = "连续记录7天饮食",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_streak_7",
+                points = 50,
+                condition = Condition.StreakDays(7),
+                unlockedAt = if (isWeekStreakUnlocked) System.currentTimeMillis() else null
             )
-        }
+        )
 
-        // 食物探索家
-        if (varietyCount >= 20) {
-            val isUnlocked = unlockedIds.contains(2L)
-            allAchievements.add(
-                Achievement(
-                    id = 2,
-                    name = "食物探索家",
-                    description = "一周内摄入20种不同食物",
-                    type = AchievementType.MILESTONE,
-                    icon = "achievement_food_variety",
-                    points = 100,
-                    condition = Condition.FoodVariety(20),
-                    unlockedAt = if (isUnlocked) System.currentTimeMillis() - 172800000 else null
-                )
+        // 2. 食物探索家 - 一周内摄入20种不同食物
+        val isFoodExplorerUnlocked = unlockedIds.contains(2L) || varietyCount >= 20
+        allAchievements.add(
+            Achievement(
+                id = 2,
+                name = "食物探索家",
+                description = "一周内摄入20种不同食物",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_food_variety",
+                points = 100,
+                condition = Condition.FoodVariety(20),
+                unlockedAt = if (isFoodExplorerUnlocked) System.currentTimeMillis() else null
             )
-        }
+        )
 
-        // 记录达人
-        if (totalRecords >= 50) {
-            val isUnlocked = unlockedIds.contains(3L)
-            allAchievements.add(
-                Achievement(
-                    id = 3,
-                    name = "记录达人",
-                    description = "累计记录50次饮食",
-                    type = AchievementType.MILESTONE,
-                    icon = "achievement_records_50",
-                    points = 150,
-                    condition = Condition.TotalRecords(50),
-                    unlockedAt = if (isUnlocked) System.currentTimeMillis() - 259200000 else null
-                )
+        // 3. 记录达人 - 累计记录50次饮食
+        val isRecordMasterUnlocked = unlockedIds.contains(3L) || totalRecords >= 50
+        allAchievements.add(
+            Achievement(
+                id = 3,
+                name = "记录达人",
+                description = "累计记录50次饮食",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_records_50",
+                points = 150,
+                condition = Condition.TotalRecords(50),
+                unlockedAt = if (isRecordMasterUnlocked) System.currentTimeMillis() else null
             )
-        }
+        )
 
-        // 健康先锋
-        val healthScore = nutritionAnalysisService.getLatestHealthScore(userId)
-        if (healthScore >= 85) {
-            val isUnlocked = unlockedIds.contains(4L)
-            allAchievements.add(
-                Achievement(
-                    id = 4,
-                    name = "健康先锋",
-                    description = "健康评分达到85分以上",
-                    type = AchievementType.SPECIAL,
-                    icon = "achievement_health_score",
-                    points = 200,
-                    condition = Condition.NutrientTarget("health_score", 85.0),
-                    unlockedAt = if (isUnlocked) System.currentTimeMillis() - 345600000 else null
-                )
+        // 4. 健康先锋 - 健康评分达到85分以上
+        val isHealthPioneerUnlocked = unlockedIds.contains(4L) || healthScore >= 85
+        allAchievements.add(
+            Achievement(
+                id = 4,
+                name = "健康先锋",
+                description = "健康评分达到85分以上",
+                type = AchievementType.SPECIAL,
+                icon = "achievement_health_score",
+                points = 200,
+                condition = Condition.NutrientTarget("health_score", 85.0),
+                unlockedAt = if (isHealthPioneerUnlocked) System.currentTimeMillis() else null
             )
-        }
+        )
 
-        // 营养均衡成就
-        val nutritionalGaps = nutritionAnalysisService.getNutritionalGaps(userId, 30)
-        val hasNoMajorGaps = nutritionalGaps.none { it.severity == Severity.SEVERE }
-        if (hasNoMajorGaps && totalRecords >= 30) {
-            val isUnlocked = unlockedIds.contains(5L)
-            allAchievements.add(
-                Achievement(
-                    id = 5,
-                    name = "营养均衡师",
-                    description = "连续30天营养摄入均衡",
-                    type = AchievementType.MILESTONE,
-                    icon = "achievement_nutrient_balance",
-                    points = 250,
-                    condition = Condition.Composite(
-                        listOf(
-                            Condition.TotalRecords(30),
-                            Condition.NutrientTarget("balance_score", 80.0)
-                        )
-                    ),
-                    unlockedAt = if (isUnlocked) System.currentTimeMillis() - 432000000 else null
-                )
+        // 5. 营养均衡师 - 连续30天营养摄入均衡
+        val isNutritionBalanceUnlocked = unlockedIds.contains(5L) || (hasNoMajorGaps && totalRecords >= 30)
+        allAchievements.add(
+            Achievement(
+                id = 5,
+                name = "营养均衡师",
+                description = "连续30天营养摄入均衡",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_nutrient_balance",
+                points = 250,
+                condition = Condition.Composite(
+                    listOf(
+                        Condition.TotalRecords(30),
+                        Condition.NutrientTarget("balance_score", 80.0)
+                    )
+                ),
+                unlockedAt = if (isNutritionBalanceUnlocked) System.currentTimeMillis() else null
             )
-        }
+        )
+
+        // 6. 三天坚持者 - 连续记录3天饮食
+        val isThreeDayStreakUnlocked = unlockedIds.contains(6L) || streakDays >= 3
+        allAchievements.add(
+            Achievement(
+                id = 6,
+                name = "三天坚持者",
+                description = "连续记录3天饮食",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_streak_3",
+                points = 20,
+                condition = Condition.StreakDays(3),
+                unlockedAt = if (isThreeDayStreakUnlocked) System.currentTimeMillis() else null
+            )
+        )
+
+        // 7. 首次记录 - 记录你的第一餐饮食
+        val isFirstRecordUnlocked = unlockedIds.contains(7L) || totalRecords >= 1
+        allAchievements.add(
+            Achievement(
+                id = 7,
+                name = "首次记录",
+                description = "记录你的第一餐饮食",
+                type = AchievementType.DAILY,
+                icon = "achievement_first_record",
+                points = 10,
+                condition = Condition.TotalRecords(1),
+                unlockedAt = if (isFirstRecordUnlocked) System.currentTimeMillis() else null
+            )
+        )
+
+        // 8. 两周坚持者 - 连续记录14天饮食
+        val isTwoWeekStreakUnlocked = unlockedIds.contains(8L) || streakDays >= 14
+        allAchievements.add(
+            Achievement(
+                id = 8,
+                name = "两周坚持者",
+                description = "连续记录14天饮食",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_streak_14",
+                points = 100,
+                condition = Condition.StreakDays(14),
+                unlockedAt = if (isTwoWeekStreakUnlocked) System.currentTimeMillis() else null
+            )
+        )
+
+        // 9. 月度冠军 - 连续记录30天饮食
+        val isMonthlyChampionUnlocked = unlockedIds.contains(9L) || streakDays >= 30
+        allAchievements.add(
+            Achievement(
+                id = 9,
+                name = "月度冠军",
+                description = "连续记录30天饮食",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_streak_30",
+                points = 200,
+                condition = Condition.StreakDays(30),
+                unlockedAt = if (isMonthlyChampionUnlocked) System.currentTimeMillis() else null
+            )
+        )
+
+        // 10. 食物爱好者 - 一周内摄入10种不同食物
+        val isFoodLoverUnlocked = unlockedIds.contains(10L) || varietyCount >= 10
+        allAchievements.add(
+            Achievement(
+                id = 10,
+                name = "食物爱好者",
+                description = "一周内摄入10种不同食物",
+                type = AchievementType.MILESTONE,
+                icon = "achievement_food_variety_10",
+                points = 50,
+                condition = Condition.FoodVariety(10),
+                unlockedAt = if (isFoodLoverUnlocked) System.currentTimeMillis() else null
+            )
+        )
 
         return allAchievements
     }

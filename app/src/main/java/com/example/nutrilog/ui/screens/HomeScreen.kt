@@ -26,6 +26,7 @@ import com.example.nutrilog.ui.components.*
 import com.example.nutrilog.ui.viewmodels.HomeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutrilog.features.recommendation.viewmodel.RecommendationViewModel
+import com.example.nutrilog.features.recommendation.ui.components.ChallengeCard
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,80 +110,6 @@ fun HomeScreen(navController: NavController, context: android.content.Context) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 6. 个性化推荐卡片（添加查看更多按钮）
-            if (recommendations.value.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "个性化推荐",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-
-                    TextButton(
-                        onClick = { navController.navigate("recommendations") }
-                    ) {
-                        Text("查看更多")
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Default.ArrowForward,
-                            contentDescription = "查看更多",
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                recommendations.value.take(2).forEach { recommendation ->  // 只显示前2个
-                    RecommendationCard(
-                        recommendation = recommendation,
-                        onApply = { recommendationViewModel.markRecommendationApplied(recommendation.id) },
-                        onDismiss = { /* 稍后处理 */ }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-
-            // 7. 今日挑战卡片（同样添加查看更多按钮）
-            if (challenges.value.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "今日挑战",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-
-                    TextButton(
-                        onClick = { navController.navigate("recommendations") }
-                    ) {
-                        Text("查看更多")
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Default.ArrowForward,
-                            contentDescription = "查看更多",
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                challenges.value.take(2).forEach { challenge ->  // 只显示前2个
-                    ChallengeCard(
-                        challenge = challenge,
-                        onUpdateProgress = { challengeId, progress ->
-                            recommendationViewModel.updateChallengeProgress(challengeId, progress)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
 
             // 8. 加载状态和错误信息
             if (loading.value) {
@@ -265,81 +192,7 @@ fun RecommendationCard(
     }
 }
 
-// 挑战卡片组件
-@Composable
-fun ChallengeCard(
-    challenge: com.example.nutrilog.features.recommendation.challenge.DailyChallenge,
-    onUpdateProgress: (Long, Float) -> Unit = { _, _ -> }
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = challenge.title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                
-                if (challenge.completed) {
-                    Text(
-                        text = "已完成",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
 
-            Text(
-                text = challenge.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-
-            LinearProgressIndicator(
-                progress = challenge.progress / challenge.target,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "进度: ${challenge.progress.toInt()}/${challenge.target.toInt()} ${challenge.unit}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                
-                if (!challenge.completed) {
-                    Button(
-                        onClick = { 
-                            val newProgress = minOf(challenge.progress + 1, challenge.target)
-                            onUpdateProgress(challenge.id, newProgress)
-                        },
-                        modifier = Modifier.padding(top = 8.dp),
-                        contentPadding = ButtonDefaults.ButtonWithIconContentPadding
-                    ) {
-                        Text("更新进度")
-                    }
-                }
-            }
-        }
-    }
-}
 
 
 

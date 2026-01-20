@@ -60,33 +60,7 @@ fun ProfileScreen(navController: NavController) {
             }
             
             // 成就列表
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(bottom = 24.dp)
-            ) {
-                Text(
-                    text = "我的成就",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                if (achievements.value.isNotEmpty()) {
-                    achievements.value.forEach { achievement ->
-                        AchievementCard(achievement = achievement)
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                } else {
-                    Text(
-                        text = "暂无成就",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+
         }
     }
 }

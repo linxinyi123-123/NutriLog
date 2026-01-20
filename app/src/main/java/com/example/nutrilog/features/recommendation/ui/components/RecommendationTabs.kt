@@ -145,11 +145,7 @@ fun EnhancedRecommendationCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = getPriorityColor(recommendation.priority).copy(alpha = 0.05f)
-        ),
-        border = CardDefaults.outlinedCardBorder() // 添加括号
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -171,15 +167,16 @@ fun EnhancedRecommendationCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     // 类型标签
+                    val priorityColor = getPriorityColor(recommendation.priority)
                     Surface(
                         shape = CircleShape,
-                        color = getPriorityColor(recommendation.priority).copy(alpha = 0.1f),
+                        color = priorityColor.copy(alpha = 0.1f),
                         modifier = Modifier.align(Alignment.Start)
                     ) {
                         Text(
                             text = getRecommendationTypeLabel(recommendation.type),
                             style = MaterialTheme.typography.labelSmall,
-                            color = getPriorityColor(recommendation.priority),
+                            color = priorityColor,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
@@ -225,10 +222,7 @@ fun EnhancedRecommendationCard(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Button(
-                    onClick = onApply,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = getPriorityColor(recommendation.priority)
-                    )
+                    onClick = onApply
                 ) {
                     Text("立即执行")
                 }
@@ -245,9 +239,10 @@ fun PriorityIndicator(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         // 优先级标签
+        val priorityColor = getPriorityColor(priority)
         Surface(
             shape = CircleShape,
-            color = getPriorityColor(priority)
+            color = priorityColor
         ) {
             Text(
                 text = when(priority) {
@@ -272,11 +267,12 @@ fun PriorityIndicator(
     }
 }
 
+@Composable
 private fun getPriorityColor(priority: com.example.nutrilog.features.recommendation.model.Priority): Color {
     return when(priority) {
-        com.example.nutrilog.features.recommendation.model.Priority.HIGH -> Color(0xFFE53935) // 红色
-        com.example.nutrilog.features.recommendation.model.Priority.MEDIUM -> Color(0xFFFF9800) // 橙色
-        com.example.nutrilog.features.recommendation.model.Priority.LOW -> Color(0xFF4CAF50) // 绿色
+        com.example.nutrilog.features.recommendation.model.Priority.HIGH -> MaterialTheme.colorScheme.error
+        com.example.nutrilog.features.recommendation.model.Priority.MEDIUM -> MaterialTheme.colorScheme.primary
+        com.example.nutrilog.features.recommendation.model.Priority.LOW -> MaterialTheme.colorScheme.secondary
     }
 }
 

@@ -40,6 +40,33 @@ fun RecommendationDashboard() {
 
     var selectedAchievement by remember { mutableStateOf<com.example.nutrilog.features.recommendation.model.gamification.Achievement?>(null) }
 
+    // 定义交互函数
+    val onRecommendationClick: (com.example.nutrilog.features.recommendation.model.Recommendation) -> Unit = { recommendation ->
+        println("Clicked recommendation: ${recommendation.title}")
+        // 可以添加导航到详情页的逻辑
+    }
+
+// 修改 dismissRecommendation 函数，调用 viewModel 的方法
+    val dismissRecommendation: (Long) -> Unit = { recommendationId ->
+        viewModel.dismissRecommendation(recommendationId)  // 调用 ViewModel 的方法
+    }
+
+    // 修改 updateChallengeProgress 函数，确保它正确工作
+    val updateChallengeProgress: (Long, Float) -> Unit = { challengeId, progress ->
+        viewModel.updateChallengeProgress(challengeId, progress)
+    }
+
+    val onTaskComplete: (String) -> Unit = { taskId ->
+        println("Task completed: $taskId")
+        // 如果viewModel有completeTask方法，调用它
+        // viewModel.completeTask(taskId)
+    }
+
+    val onCreateNewPlan: () -> Unit = {
+        println("Create new plan clicked")
+        // 添加创建新计划的逻辑
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,8 +89,8 @@ fun RecommendationDashboard() {
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                // 错误提示
-                error?.let {
+                // 确保错误提示能够显示
+                error?.let { errorMessage ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -73,7 +100,7 @@ fun RecommendationDashboard() {
                         )
                     ) {
                         Text(
-                            text = it,
+                            text = errorMessage,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.padding(16.dp)
@@ -120,28 +147,31 @@ fun RecommendationDashboard() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 内容区域 - 使用 Box 包裹，确保有固定高度
+                    // 内容区域
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f) // 使用权重确保占满剩余空间
+                            .weight(1f)
                     ) {
                         when(selectedTab) {
                             0 -> RecommendationTabContent(
                                 recommendations = recommendations,
-                                onRecommendationClick = { /* 处理推荐点击 */ },
+                                onRecommendationClick = onRecommendationClick,
                                 onApply = viewModel::markRecommendationApplied,
-                                onDismiss = { /* 处理推荐忽略 */ }
+                                onDismiss = dismissRecommendation  // 修复：使用实际函数
                             )
                             1 -> ChallengeTabContent(
                                 challenges = challenges,
-                                onUpdateProgress = viewModel::updateChallengeProgress
+                                onUpdateProgress = updateChallengeProgress  // 修复：使用实际函数
                             )
                             2 -> AchievementTabContent(
                                 achievements = achievements,
                                 onAchievementClick = { selectedAchievement = it }
                             )
-                            3 -> PlanTabContent()
+                            3 -> PlanTabContent(  // 修复：传入交互函数
+                                onTaskComplete = onTaskComplete,
+                                onCreateNewPlan = onCreateNewPlan
+                            )
                         }
                     }
                 }
@@ -543,7 +573,11 @@ fun AchievementItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlanTabContent() {
+fun PlanTabContent(
+    onTaskComplete: (String) -> Unit = {},
+    onCreateNewPlan: () -> Unit = {}
+) {
+    // ... 函数体保持不变
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -560,9 +594,7 @@ fun PlanTabContent() {
 
         ImprovementPlanCard(
             plan = mockPlan,
-            onTaskComplete = { taskId ->
-                // 处理任务完成
-            }
+            onTaskComplete = onTaskComplete  // 使用传入的参数
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -596,9 +628,9 @@ fun PlanTabContent() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 创建新计划按钮
+        // 创建新计划按钮 - 使用传入的参数
         Button(
-            onClick = { /* 创建新计划 */ },
+            onClick = onCreateNewPlan,  // 使用传入的参数
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Filled.Add, contentDescription = "添加")

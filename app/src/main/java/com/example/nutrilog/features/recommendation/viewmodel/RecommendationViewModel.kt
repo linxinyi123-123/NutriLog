@@ -55,7 +55,24 @@ class RecommendationViewModel : ViewModel() {
             }
         }
     }
+    // 在 RecommendationViewModel 类中添加这个方法
+    fun dismissRecommendation(recommendationId: Long) {
+        viewModelScope.launch {
+            try {
+                // 如果有服务端接口，调用它
+                // recommendationService.dismissRecommendation(recommendationId)
 
+                // 本地移除：直接从当前列表中过滤掉
+                _recommendations.update { currentList ->
+                    currentList.filter { it.id != recommendationId }
+                }
+
+                println("已移除推荐: $recommendationId")
+            } catch (e: Exception) {
+                _error.value = "移除推荐失败: ${e.message}"
+            }
+        }
+    }
     fun loadRecommendations(userId: Long) {
         viewModelScope.launch {
             try {
@@ -112,4 +129,5 @@ class RecommendationViewModel : ViewModel() {
             }
         }
     }
+
 }
